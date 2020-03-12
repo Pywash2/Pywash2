@@ -1,0 +1,1 @@
+"G:\Python\python.exe" "G:\Users\Dadevo\Local Settings\Documents\GitHub\Pywash2\App.py"
