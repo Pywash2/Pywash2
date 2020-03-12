@@ -229,3 +229,6 @@ def updateDropdown2(val1):
         if i is val1:
             return row[1]
     return ''
+
+if __name__ == '__main__':
+    app.run_server(debug=True, use_reloader=False)
