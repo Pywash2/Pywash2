@@ -1,0 +1,35 @@
+Links from the UI to the other methods for importing data, processing, etc.
+For every link:
+'Input' specifies the type of data that will be fed to the method
+'Output' specifies the type of data the UI wants back from the method
+'Logger Output' specifies the type of data the Logger wants back from the method to give meaningful feedback
+
+
+Link List:
+
+-Uploading Files:
+  -Input: File.csv
+  -Output: data DataFrame
+  -Logger Output: hasHeader Boolean, separator String
+  
+-Detecting Column Types:
+  -Input: data Dataframe
+  -Output: data Dataframe (with correct column types)
+  -Logger Output: ?
+
+-Missing Values:
+  -Input: data Dataframe
+  -Output: data Dataframe (with processed missing values)
+  -Logger Output: data Dataframe (deleted/edited rows), methods ??? (what operations you did to handle missing values)
+
+-Outlier Detection:
+  -Input: data Dataframe
+  -Output: data Dataframe (with processed outliers)
+  -Logger Output: data Dataframe (deleted/edited rows), methods ??? (what operations you did to handle outliers)
+
+-Normalization:
+  -Input: data Dataframe
+  -Output: data Dataframe (with normalized columns)
+  -Logger Output: normalizedColumnName List[String] (List of normalized columns)
+  
+-???
