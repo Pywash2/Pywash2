@@ -43,12 +43,5 @@ def MainLayout():
 
             VisualizationUI(),
 
-            html.Div(
-                id = 'the_data_table',
-                children = [
-                ],
-#                style = {'width': '50%','textAlign':'center','display': 'inline-block'}
-            )
-
         ]
     )

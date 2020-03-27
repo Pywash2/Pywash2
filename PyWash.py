@@ -102,6 +102,12 @@ class SharedDataFrame:
             return export_arff(self.name, self.data,
                                self.parser.attributes, self.parser.description)
 
+    # Data Cleaning functions (BandC)
+    def returnPreview(self):
+        """ Return a preview (5 rows) of the dataset """
+        previewData = self.data.head(5)
+        return previewData
+
     # BandB functions #####
     def missing(self, setting, na_values):
         """ Fix the missing values of the dataset """

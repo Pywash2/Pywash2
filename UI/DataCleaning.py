@@ -5,24 +5,14 @@ import dash_daq as daq
 import dash_table as dtb
 
 #Example for column types
-columnTypeList = list()
-columnTypeList.append(['ID','int64'])
-columnTypeList.append(['Name','object'])
-columnTypeList.append(['Gender','bool'])
-columnTypeList.append(['Weight','float64'])
-columnTypeInput = []
-TableInput = []
-i = 0
-for row in columnTypeList:
-    i = i + 1
-    columnTypeInput.append({'label': row[0]+':'+row[1], 'value': i})
-    TableInput.append({'name': row[0], 'id': row[0]})
-
 def DataCleaningUI():
     return html.Div(
         id = 'DataCleaning',
         children = [
         #Cleaning Options Layer 1: Column Type Detecting
+            dcc.Store(
+                id = 'columnStorage',
+            ),
             html.Div(
                 id = 'Cleaning_Layer_1',
                 children = [
@@ -39,8 +29,8 @@ def DataCleaningUI():
                             html.Div( #Check updateMapSelect in visualization for example of dynamically changing list entries
                                 dcc.Dropdown(
                                     id = 'dropdown_column_1',
-                                    options=columnTypeInput,
-#                                    value='1'
+                                    options=[{'label': 'Import data to get started', 'value': '0'}],
+                                    value="0",
                                 ),
                                 style = {'width':'40%','display': 'inline-block','vertical-align': 'middle'}
                             ),
@@ -134,9 +124,8 @@ def DataCleaningUI():
                             html.H6("Already normalize column(s)?"),
                             dcc.Dropdown(
                                 id = 'dropdown_normalization',
-                                options=columnTypeInput,
+                                options=[{'label': 'Import data to get started', 'value': '0'}],
                                 multi=True,
-                                value=""
                             )
                         ],
                         style = {'width': '30%','display': 'inline-block','textAlign':'left','vertical-align': 'middle'}
@@ -155,6 +144,12 @@ def DataCleaningUI():
                 ],
                 style = {'width': '100%','textAlign':'center','display': 'inline-block'}
             ),
+            html.Div(
+                id = 'preview_data_table',
+                children = [
+                ],
+#                style = {'width': '50%','textAlign':'center','display': 'inline-block'}
+            )
         ],
         style = {'textAlign':'center'}
     )
