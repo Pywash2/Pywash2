@@ -1,5 +1,11 @@
+arff==0.9
+chardet==3.0.4
+clevercsv==0.2.0
 dash==1.9.1
 dash-core-components==1.8.1
 dash-daq==0.4.0
 dash-html-components==1.0.2
 dash-table==4.6.1
+pandas==0.24.2
+requests==2.21.0
+urllib==1.24.2
