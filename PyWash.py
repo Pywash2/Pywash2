@@ -1,4 +1,4 @@
-from src.BandA.Normalization import normalize
+from methods.BandA.Normalization import normalize
 #from src.BandA.OutlierDetector import identify_outliers, estimate_contamination
 from methods.BandB.ptype.Ptype import Ptype
 from methods.BandB.MissingValues import handle_missing
@@ -106,7 +106,7 @@ class SharedDataFrame:
     # Preview functions #####
     def returnPreview(self):
         """ Return a preview (5 rows) of the dataset """
-        previewData = self.data.head(5)
+        previewData = self.data.tail(5)
         return previewData
 
     # Data Cleaning functions #####
@@ -120,6 +120,7 @@ class SharedDataFrame:
         #Currently errors sometimes, rip
         if handleMissing == '1':
             print('handling missing data')
+            #'remove' translates to: Jury-rig it to just drop the rows with NAs
             self.missing('remove', ['n/a', 'na', '--', '?']) #<- these are detected NA's, put in here :)
         if normalizationColumns is not None:
             print('handling normalization')

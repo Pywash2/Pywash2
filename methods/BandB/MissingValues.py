@@ -367,6 +367,7 @@ def handle_missing(df, setting='mar', na_values=['n/a', 'na', '--', '?']):
     """
     df = df.replace(r'^\s*$', np.nan, regex=True)
     df = df.replace(na_values, np.nan)
+    #Jury-rig it to just drop the rows with NAs
     if setting == 'remove':
         return df.dropna()
     flag = identify_missing(df, na_values)
