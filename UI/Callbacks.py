@@ -1,4 +1,6 @@
 from App import app
+
+import dash
 from dash.dependencies import Input, Output, State
 import dash_html_components as html
 import dash_core_components as dcc
@@ -13,13 +15,27 @@ from PyWash import SharedDataFrame
 theData = None
 originalData = None
 previewData = None
-dataTypeList = [
 
-]
+#Put Data in Preview Table
+@app.callback(
+    [Output('PreviewDataTable', 'columns'),
+    Output('PreviewDataTable', 'data')],
+    [Input('dataUploaded', 'data')],
+)
+def createDataPreview(change):
+    print('trying to create data preview')
+    df = previewData
+    if df is not None:
+        print('creating data preview')
+        return([
+            {"name": i, "id": i, "deletable": True} for i in df.columns
+        ],
+        df.to_dict('records'))
+
 
 # Load Data
 @app.callback(
-    Output('dataTrigger', 'data'),
+    Output('dataUploaded', 'data'),
     [Input('upload-data', 'contents')],
     [State('upload-data', 'filename'),
     State('upload-data', 'last_modified')]
@@ -37,78 +53,106 @@ def store_data(data_contents, data_name, data_date):
     theData = dataSet
     OriginalData = dataSet
     previewData = dataSet.returnPreview()
+    print("dataset loaded")
     return 1
-#    return dataSet
 
-# Put Data in Table
+#Put Data in Result Table
 @app.callback(
-    Output('preview_data_table', 'children'),
-    [Input('dataTrigger', 'data')]
+    Output('result_data', 'children'),
+    [Input('dataProcessed','data')]
 )
-def data_table(change):
-    df = previewData
-    return [html.Div([
-        html.H5("Data Preview"),
-        dash_table.DataTable(
-            id='dataTable',
-            columns=[
-                {"name": i, "id": i, "deletable": True} for i in df.columns
-            ],
-            data=df.to_dict('records'),
-#            editable=True,
-#            filtering=True,
-#            sorting=True,
-#            sorting_type="multi",
-#            row_selectable="multi",
-#            row_deletable=True,
-#            selected_rows=[],
-#            pagination_mode="fe",
-#            pagination_settings={
-#                "displayed_pages": 1,
-#                "current_page": 0,
-#                "page_size": 50,
-#            },
-#            navigation="page",
-#            style_cell={'textAlign': 'right', "padding": "5px"},
-#            style_table={'overflowX': 'auto'},
-#            style_cell_conditional=[{'if': {'row_index': 'odd'},
-#                                     'backgroundColor': 'rgb(248, 248, 248)'}],
-#            style_header={'backgroundColor': '#C2DFFF',
-#                          'font-size': 'large',
-#                          'text-align': 'center'},
-#            style_filter={'backgroundColor': '#DCDCDC',
-#                          'font-size': 'large'},
-        ),
-    ])]
+def createDataResult(click):
+    if click != None:
+        df = theData.get_dataframe()
+        return [html.Div([
+            html.H5("Data Preview"),
+            dash_table.DataTable(
+                id='ResultDataTable',
+                columns=[
+                    {"name": i, "id": i, "deletable": True} for i in df.columns
+                ],
+                data=df.to_dict('records'),
+            ),
+        ])]
+    return None
+
+#Change data based on selected actions
+@app.callback(
+    Output('dataProcessed', 'data'),
+    [Input('button','n_clicks')],
+    [State('columnStorage', 'data'),
+    State('missingValues', 'value'),
+    State('dropdown_normalization', 'value'),
+    State('dropdown_standardization', 'value'),
+    State('Duplicated_Rows_Booleanswitch','on')],
+)
+def processData(click, columnData, missingValues, normalizationColumns, standardizationColumns, removeDuplicateRows):
+    if click != None:
+        print('Starting processing, this can take a while')
+        print(columnData)
+        theData.startCleaning(columnData, missingValues, normalizationColumns, standardizationColumns, removeDuplicateRows)
+        return 1
+    return None
+
 
 #Create column list based on dataTable
 @app.callback(
     Output('columnStorage', 'data'),
-    [Input('dataTable', 'data'),
+    [Input('PreviewDataTable', 'columns'),
     Input('dropdown_column_2', 'value')],
     [State('dropdown_column_1', 'value'),
     State('columnStorage', 'data')],
-
 )
-def createColumnList(dataChanges,col2,col1,colData):
+def createColumnList(prevData,col2,col1,colData):
+    #Look at what triggered the callback, 'PreviewDataTable' or 'dropdown_column_2'
+    ctx = dash.callback_context
+    last_event = ctx.triggered[0]['prop_id'].split('.')[0]
+
     #If already initialized, change column based on chosen type
     if colData is not None:
-        if col2 is '':
-            #This means that the user hasn't chosen a datatype yet, so it shouldnt update
-            raise PreventUpdate
-        print('updating Column Storage')
-        colData[col1] = [str(previewData.columns[col1]),str(col2)]
-        return colData
+        if last_event == 'dropdown_column_2':
+            if col2 is '':
+                #This means that the user hasn't chosen a datatype yet, so it shouldnt update
+                raise PreventUpdate
+            print('updating Column Storage')
+            print(col1)
+            print(col2)
+            for row in colData:
+                if row[0] == col1:
+                    row[1] = str(col2)
+            return colData
+        #Remove column removed in preview table
+        if last_event == 'PreviewDataTable':
+            prevList = []
+            for item in prevData:
+                prevList.append(item['name'])
+            for item in colData:
+                delete = True
+                for item2 in prevList:
+                    if item[0] == item2:
+                        delete = False
+                if delete == True:
+                    colData.remove(item)
+            print(colData)
+            return colData
+#            columnTypeList = list()
+#            columnList = list(prevData.columns)
+#            for item in columnList:
+#                x = [item,str(dataFrame[item].dtype)]
+#                columnTypeList.append(x)
+#            return columnTypeList
+
 
     #Otherwise, initialize column list
-    dataFrame = previewData
-    columnTypeList = list()
-    columnList = list(dataFrame.columns)
-#    for item in columnList:
-#        columnTypeList.append([item,str(dataFrame[item].dtype)])
-    for item in columnList:
-        columnTypeList.append([item,str(dataFrame[item].dtype)])
-    return columnTypeList
+    if last_event == 'PreviewDataTable' and prevData is not None:
+        dataFrame = previewData
+        columnTypeList = list()
+        columnList = list(dataFrame.columns)
+        for item in columnList:
+            x = [item,str(dataFrame[item].dtype)]
+            print(x)
+            columnTypeList.append(x)
+        return columnTypeList
 
 # Main Callbacks
 @app.callback(
@@ -138,13 +182,9 @@ def updateColumnChooseNames(colData,col1,col2):
         print('updating Column 1')
         print(col2)
         returnList = []
-        i = 0
         for row in colData:
             print(row)
-            if i is col1:
-                row[1] = col2
-            returnList.append({'label': row[0]+':'+row[1], 'value': i})
-            i = i + 1
+            returnList.append({'label': row[0]+':'+row[1], 'value': row[0]})
         return returnList
     return [{'label': 'Import data to get started', 'value': '0'}]
 
@@ -166,18 +206,27 @@ def updateDColumnChooseValues(col1,colData):
 @app.callback(
     Output('dropdown_normalization', 'options'),
     [Input('columnStorage', 'data')],
-    [State('dropdown_column_2', 'value'),
-    State('dropdown_normalization', 'value')],
+    [State('dropdown_normalization', 'value')],
 )
-def updateNormalizationColumns(colData,col2,norm):
+def updateNormalizationColumns(colData,norm):
     if colData is not None:
         print('updating Normalization Column')
         returnList = []
-        i = 0
         for row in colData:
-            i = i + 1
-            if i is norm:
-                row[1] = col2
-            returnList.append({'label': row[0]+':'+row[1], 'value': i})
+            returnList.append({'label': row[0]+':'+row[1], 'value': row[0]})
+        return returnList
+    return [{'label': 'Import data to get started', 'value': '0'}]
+
+@app.callback(
+    Output('dropdown_standardization', 'options'),
+    [Input('columnStorage', 'data')],
+    [State('dropdown_standardization', 'value')],
+)
+def updateStandardizationColumns(colData,norm):
+    if colData is not None:
+        print('updating Standardization Column')
+        returnList = []
+        for row in colData:
+            returnList.append({'label': row[0]+':'+row[1], 'value': row[0]})
         return returnList
     return [{'label': 'Import data to get started', 'value': '0'}]
