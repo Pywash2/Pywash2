@@ -8,7 +8,8 @@ def MainLayout():
     return html.Div(
         id = 'mainLayout',
         children = [
-            dcc.Store(id='dataTrigger'),
+            dcc.Store(id='dataUploaded'),
+            dcc.Store(id='dataProcessed'),
             #Title Section
             html.Div(
                 id = 'titlePanel',

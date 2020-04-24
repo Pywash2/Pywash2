@@ -1,8 +1,9 @@
 import dash_html_components as html
 import dash_core_components as dcc
-
 import dash_daq as daq
-import dash_table as dtb
+import dash_table
+
+import pandas as pd
 
 #Example for column types
 def DataCleaningUI():
@@ -67,10 +68,11 @@ def DataCleaningUI():
                         style = {'width': '30%','display': 'inline-block'}
                     ), #could also put below 2 in 1 div and do width 40%,textalign center on div to center all ipv manual
                     html.Div(
-                        id = 'Missing_Values',
+                        id = 'Missing_Values_Box',
                         children = [
                             html.H6("Test for missing values?"),
                             dcc.RadioItems(
+                                id = 'missingValues',
                                 options=[
                                     {'label': 'No', 'value': '0'},
                                     {'label': 'Yes', 'value': '1'},
@@ -118,20 +120,37 @@ def DataCleaningUI():
                         ],
                         style = {'width': '20%','display': 'inline-block','textAlign':'center','vertical-align': 'middle'}
                     ),
-                    html.Div(
-                        id = 'Normalize',
-                        children = [
-                            html.H6("Already normalize column(s)?"),
-                            dcc.Dropdown(
-                                id = 'dropdown_normalization',
-                                options=[{'label': 'Import data to get started', 'value': '0'}],
-                                multi=True,
-                            )
-                        ],
-                        style = {'width': '30%','display': 'inline-block','textAlign':'left','vertical-align': 'middle'}
-                    )
+#                    html.Div(
+#                        id = 'Normalize',
+#                        children = [
+#                            html.H6("Already normalize column(s)?"),
+#                            dcc.Dropdown(
+#                                id = 'dropdown_normalization',
+#                                options=[{'label': 'Import data to get started', 'value': '0'}],
+#                                multi=True,
+#                            )
+#                        ],
+#                        style = {'width': '30%','display': 'inline-block','textAlign':'left','vertical-align': 'middle'}
+#                    )
                 ],
                 style = {'vertical-align': 'middle'}
+            ),
+            html.Div(
+            id = 'standardize/Normalize',
+            children = [
+                html.H6("Normalize column(s)?"),
+                dcc.Dropdown(
+                    id = 'dropdown_normalization',
+                    options=[{'label': 'Import data to get started', 'value': '0'}],
+                    multi=True,
+                ),
+                html.H6("Standardize column(s)?"),
+                dcc.Dropdown(
+                    id = 'dropdown_standardization',
+                    options=[{'label': 'Import data to get started', 'value': '0'}],
+                    multi=True,
+                ),
+            ]
             ),
             html.Div(
                 id = 'emptySpace0',
@@ -145,10 +164,15 @@ def DataCleaningUI():
                 style = {'width': '100%','textAlign':'center','display': 'inline-block'}
             ),
             html.Div(
-                id = 'preview_data_table',
+                id = 'preview_data',
                 children = [
+                    html.H5("Data Preview"),
+                    dash_table.DataTable(
+                        id='PreviewDataTable',
+#                        columns=None,
+#                        data=pd.DataFrame(),
+                    ),
                 ],
-#                style = {'width': '50%','textAlign':'center','display': 'inline-block'}
             )
         ],
         style = {'textAlign':'center'}

@@ -335,6 +335,8 @@ def clean_missing(df, features, setting):
         with NoStdStreams():
             Xy_filled = IterativeImputer().fit_transform(df_preprocessed.values)
         print("Missing values cleaned!")
+    elif recommend == 'list deletion':
+        print('list deletion not implemented for mcar')
     else:
         print("Error: Approach not available!")
     return features_new, Xy_filled

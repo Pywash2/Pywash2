@@ -1,4 +1,4 @@
-#from src.BandA.Normalization import normalize
+from src.BandA.Normalization import normalize
 #from src.BandA.OutlierDetector import identify_outliers, estimate_contamination
 from methods.BandB.ptype.Ptype import Ptype
 from methods.BandB.MissingValues import handle_missing
@@ -103,18 +103,76 @@ class SharedDataFrame:
             return export_arff(self.name, self.data,
                                self.parser.attributes, self.parser.description)
 
-    # Data Cleaning functions (BandC)
+    # Preview functions #####
     def returnPreview(self):
         """ Return a preview (5 rows) of the dataset """
         previewData = self.data.head(5)
         return previewData
 
+    # Data Cleaning functions #####
+    def startCleaning(self, columnData, handleMissing, normalizationColumns, standardizationColumns, removeDuplicates):
+        """ Main data cleaning function, use function defined below this one """
+        print('changing column types')
+        self.changeColumns(columnData)
+        if removeDuplicates == True:
+            print('removing duplicates')
+            self.removeDuplicateRows()
+        #Currently errors sometimes, rip
+        if handleMissing == '1':
+            print('handling missing data')
+            self.missing('remove', ['n/a', 'na', '--', '?']) #<- these are detected NA's, put in here :)
+        if normalizationColumns is not None:
+            print('handling normalization')
+            self.normalizeColumns(normalizationColumns)
+        if standardizationColumns is not None:
+            print('handling standardization')
+            self.standardizeColumns(standardizationColumns)
+        print('done cleaning!')
+
+    def changeColumns(self,columnData):
+        """ Remove duplicate rows if selected in preview """
+        #Check if columns need to be removed
+        for item in self.data.columns:
+            remove = True
+            for item2 in columnData:
+                if item == item2[0]:
+                    remove = False
+            if remove == True:
+                self.data = self.data.drop(columns=item)
+                print('column removed: '+str(item))
+        #Now change the datatypes of the leftover columns
+        for item in columnData:
+            #Check if needs to be removed
+            self.data = self.data.astype({item[0]:item[1]})
+        print(self.data.dtypes)
+
+    def removeDuplicateRows(self):
+        print('Removing duplicates')
+        rows = len(self.data.index)
+        """ Remove columns selected for removal in preview """
+        self.data.drop_duplicates(inplace=True)
+        print('rows removed: '+str(rows - len(self.data.index)))
+        return self.data
+
+    def normalizeColumns(self,normalizationColumns):
+        """ Normalize columns selected for removal in preview """
+        scale_range='0,1'
+        print(normalizationColumns)
+        self.data = normalize(self.data, normalizationColumns, 'normalize', tuple(int(i) for i in scale_range.split(',')))
+#        self.data = normalize(self.data, columns, setting, tuple(int(i) for i in scale_range.split(',')))
+        return self.data
+
+    def standardizeColumns(self,standardizationColumns):
+        """ Standardize columns selected for removal in preview """
+        scale_range='0,1'
+        print(standardizationColumns)
+        self.data = normalize(self.data, standardizationColumns, 'standardize', tuple(int(i) for i in scale_range.split(',')))
+        return self.data
+
     # BandB functions #####
     def missing(self, setting, na_values):
         """ Fix the missing values of the dataset """
-
         self.data = handle_missing(self.data, setting, na_values)
-        return self.data
 
     def infer_data_types_ptype(self):
         """ Infer datatypes using ptype and apply the datatypes to the dataset"""
