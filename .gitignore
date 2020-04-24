@@ -3,4 +3,4 @@
 venv
 # Optimizer files
 __pycache__/
-
+*.pyc
