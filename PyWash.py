@@ -50,15 +50,19 @@ class SharedDataFrame:
 
     def _load_data(self):
         self.data = self.parser.parse()
-        self.data = self.infer_data_types_ptype()
+        self.col_types, self.anomalies, self.missing_values = self.infer_data_types_ptype()
+        self.data = self.set_data_types()
+
 
     def set_data(self, df):
-        """ Sets an pre-parsed DataFrame as the data of the SharedDataFrame """
-        self.data = df
-        self.data = self.infer_data_types_ptype()
+            """ Sets an pre-parsed DataFrame as the data of the SharedDataFrame """
+            self.data = df
+            self.col_types, self.anomalies, self.missing_values = self.infer_data_types_ptype()
+            self.data = self.set_data_types()
+
 
     def remove(self, indices):
-        self.data = self.data.drop(indices)
+            self.data = self.data.drop(indices)
 
     def get_dataframe(self):
         return self.data
@@ -190,10 +194,15 @@ class SharedDataFrame:
         predicted = ptype.predicted_types
         types_lst = [convert_dct.get(_type) for _type in predicted.values()]
         types_dct = dict(zip(predicted.keys(), types_lst))
-        self.col_types = types_dct
+        anomalies = ptype.get_anomaly_predictions()
+        missing_vals = ptype.get_missing_data_predictions()
+        return types_dct, anomalies, missing_vals
 
+
+    def set_data_types(self):
         # try to change types of columns iteratively
-        for item in types_dct.items():
+        df = self.data
+        for item in self.col_types.items():
             item = (item,)
             try:
                 df = df.astype(dict(item))
