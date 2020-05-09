@@ -51,6 +51,9 @@ class SharedDataFrame:
     def _load_data(self):
         self.data = self.parser.parse()
         self.col_types, self.anomalies, self.missing_values = self.infer_data_types_ptype()
+
+        # TODO implement user interaction to change anomalies
+        self.replace_anomalies()
         self.data = self.set_data_types()
 
 
@@ -58,6 +61,9 @@ class SharedDataFrame:
             """ Sets an pre-parsed DataFrame as the data of the SharedDataFrame """
             self.data = df
             self.col_types, self.anomalies, self.missing_values = self.infer_data_types_ptype()
+
+            # TODO implement user interaction to change anomalies
+            self.replace_anomalies()
             self.data = self.set_data_types()
 
 
@@ -195,7 +201,9 @@ class SharedDataFrame:
         types_lst = [convert_dct.get(_type) for _type in predicted.values()]
         types_dct = dict(zip(predicted.keys(), types_lst))
         anomalies = ptype.get_anomaly_predictions()
+        anomalies = {k: v for k, v in anomalies.items() if v} # remove empty lists
         missing_vals = ptype.get_missing_data_predictions()
+        missing_vals = { k : v for k,v in missing_vals.items() if v}
         return types_dct, anomalies, missing_vals
 
 
@@ -209,6 +217,12 @@ class SharedDataFrame:
             except:
                 pass
         return df
+
+    def replace_anomalies(self):
+        df = self.data
+        anomalies = self.anomalies
+        for col_name in anomalies:
+            df[col_name][df[col_name].isin(anomalies[col_name])] = None
 
     # BandA functions #####
     def scale(self, columns, setting, scale_range=(0, 1)):
