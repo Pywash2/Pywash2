@@ -120,6 +120,8 @@ def createColumnList(prevData,col2,col1,colData):
             for row in colData:
                 if row[0] == col1:
                     row[1] = str(col2)
+                    # TODO
+
             return colData
         #Remove column removed in preview table
         if last_event == 'PreviewDataTable':

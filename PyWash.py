@@ -29,6 +29,9 @@ class SharedDataFrame:
         self.parser = None
         self.score = None
         self.col_types = None
+        self.anomalies = None
+        self.missing_values = None
+        self.accuracy_ptypes = None
         # When a path to a file or the contents are given, parse the file and load the data
         if file_path is not None:
             self.parser = assign_parser(file_path=file_path, contents=contents, verbose=verbose)
@@ -51,7 +54,6 @@ class SharedDataFrame:
     def _load_data(self):
         self.data = self.parser.parse()
         self.col_types, self.anomalies, self.missing_values = self.infer_data_types_ptype()
-
         # TODO implement user interaction to change anomalies
         self.replace_anomalies()
         self.data = self.set_data_types()
@@ -204,6 +206,10 @@ class SharedDataFrame:
         anomalies = {k: v for k, v in anomalies.items() if v} # remove empty lists
         missing_vals = ptype.get_missing_data_predictions()
         missing_vals = { k : v for k,v in missing_vals.items() if v}
+
+        # estimate accuracy
+        self.accuracy_ptypes = {k:v.max() for k, v in ptype.all_posteriors['demo'].items()}
+
         return types_dct, anomalies, missing_vals
 
 
@@ -217,6 +223,13 @@ class SharedDataFrame:
             except:
                 pass
         return df
+
+    def remove_anomaly_prediction(self, column_name):
+        #TODO improve anomaly removal. Some anomalies might still be anomalies.
+        try:
+            del[self.anomalies[column_name]]
+        except:
+            pass
 
     def replace_anomalies(self):
         df = self.data
