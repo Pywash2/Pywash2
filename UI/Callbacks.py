@@ -28,7 +28,7 @@ def createDataPreview(change):
     if df is not None:
         print('creating data preview')
         return([
-            {"name": i, "id": i, "deletable": True} for i in df.columns
+            {"name": i, "id": i, "deletable": True, "renamable": True,} for i in df.columns
         ],
         df.to_dict('records'))
 
@@ -84,7 +84,7 @@ def createDataResult(click):
     State('missingValues', 'value'),
     State('dropdown_normalization', 'value'),
     State('dropdown_standardization', 'value'),
-    State('Duplicated_Rows_Booleanswitch','on')],
+    State('DuplicatedRows','value')],
 )
 def processData(click, columnData, missingValues, normalizationColumns, standardizationColumns, removeDuplicateRows):
     if click != None:
@@ -123,20 +123,22 @@ def createColumnList(prevData,col2,col1,colData):
                     # TODO
 
             return colData
-        #Remove column removed in preview table
+        #Update preprocessing data based on changes in preview table
         if last_event == 'PreviewDataTable':
             prevList = []
+            i = 0
             for item in prevData:
-                prevList.append(item['name'])
-            for item in colData:
-                delete = True
-                for item2 in prevList:
-                    if item[0] == item2:
-                        delete = False
-                if delete == True:
-                    colData.remove(item)
-            print(colData)
-            return colData
+                part2 = None
+                for item2 in colData:
+                    if item2[0] == item['name']: #Column deleted
+                        part2 = item2[1]
+                if part2 == None: #Column renamed
+                    part2 = colData[i][1]
+                #find matching string for item
+                prevList.append([item['name'],part2])
+                i += 1
+            print(prevList)
+            return prevList
 #            columnTypeList = list()
 #            columnList = list(prevData.columns)
 #            for item in columnList:
