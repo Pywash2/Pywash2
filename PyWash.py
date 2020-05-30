@@ -207,8 +207,22 @@ class SharedDataFrame:
         missing_vals = ptype.get_missing_data_predictions()
         missing_vals = { k : v for k,v in missing_vals.items() if v}
 
+        integer_cols = [k for k,v in predicted.items() if v == 'integer']
+
         # estimate accuracy
-        self.accuracy_ptypes = {k:v.max() for k, v in ptype.all_posteriors['demo'].items()}
+        accuracy_col = {k:v.max() for k, v in ptype.all_posteriors['demo'].items()}
+
+        # estimate degree of unique values:
+        cat_threshold = 20 # threshold to decide whether an integer column is actually a categorical column
+        df_length = len(df)
+        for col in integer_cols:
+            degree = (len(df[col].unique()) / df_length)*100
+            print(degree)
+            if degree <= cat_threshold:
+                types_dct[col] = 'category'
+                accuracy_col[col] = 'unknown' # change accuracy of prediction
+
+        self.accuracy_ptypes = accuracy_col
 
         return types_dct, anomalies, missing_vals
 
