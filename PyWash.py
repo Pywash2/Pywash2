@@ -1,5 +1,5 @@
 from methods.BandA.Normalization import normalize
-#from src.BandA.OutlierDetector import identify_outliers, estimate_contamination
+from methods.BandA.OutlierDetector import identify_outliers, estimate_contamination
 from methods.BandB.ptype.Ptype import Ptype
 from methods.BandB.MissingValues import handle_missing
 from methods.BandC.ParserUtil import assign_parser
@@ -122,18 +122,21 @@ class SharedDataFrame:
         return previewData
 
     # Data Cleaning functions #####
-    def startCleaning(self, columnData, handleMissing, normalizationColumns, standardizationColumns, removeDuplicates):
+    def startCleaning(self, columnData, handleMissing, handleOutlier, normalizationColumns, standardizationColumns, removeDuplicates):
         """ Main data cleaning function, use function defined below this one """
         print('changing column types')
         self.changeColumns(columnData)
         if removeDuplicates == True:
             print('removing duplicates')
             self.removeDuplicateRows()
-        #Currently errors sometimes, rip
         if handleMissing == '1':
+        #Currently errors sometimes, rip
             print('handling missing data')
             #'remove' translates to: Jury-rig it to just drop the rows with NAs
-            self.missing('remove', ['n/a', 'na', '--', '?']) #<- these are detected NA's, put in here :)
+            self.missing('remove', ['n/a', 'na', '--', '?']) #<- these are detected NA-s, put in here :)
+        if int(handleOutlier) > 0:
+            print('handling outliers')
+            self.handleOutliers(handleOutlier)
         if normalizationColumns is not None:
             print('handling normalization')
             self.normalizeColumns(normalizationColumns)
@@ -166,6 +169,21 @@ class SharedDataFrame:
         self.data.drop_duplicates(inplace=True)
         print('rows removed: '+str(rows - len(self.data.index)))
         return self.data
+
+    def handleOutliers(self,handleNum):
+        contamination = estimate_contamination(self.data)
+        setting = [0,7,9]
+        self.data = self.outlier(setting,contamination)
+        if handleNum == '1':
+            #Testing
+            print(list(self.data.columns.values))
+            #drop all outlier columns except prediction, which is renamed to 'outlier' for clarity
+            self.data = self.data.drop(['anomaly_score','probability'],axis = 1)
+            self.data.rename(columns={'prediction': 'outlier'})
+        if handleNum == '2':
+            #Remove detected outliers, drop all outlier columns
+            self.data = self.data[self.data.prediction != 1]
+            self.data = self.data.drop(['anomaly_score','probability','prediction'],axis = 1)
 
     def normalizeColumns(self,normalizationColumns):
         """ Normalize columns selected for removal in preview """

@@ -19,44 +19,85 @@ def DataCleaningUI():
                 children = [
                     html.Div(
                         html.H6("  "), #Creates a white space
-                        style = {'width': '30%','display': 'inline-block','vertical-align': 'middle'}
-                        ),
+                        style = {'width': '5%','display': 'inline-block','vertical-align': 'middle'}
+                    ),
                     html.Div(
+                        id = 'Column_Type_Changing',
                         children = [
                             html.Div(
-                                html.H6("If desired, change column types"),
-                                style = {'width':'20%','display': 'inline-block','textAlign':'center','vertical-align': 'middle'}
-                            ),
-                            html.Div( #Check updateMapSelect in visualization for example of dynamically changing list entries
-                                dcc.Dropdown(
-                                    id = 'dropdown_column_1',
-                                    options=[{'label': 'Import data to get started', 'value': '0'}],
-                                    value="0",
-                                ),
-                                style = {'width':'40%','display': 'inline-block','vertical-align': 'middle'}
+                                html.H6("Check and/or change column types"),
+                                style = {'width':'100%','display': 'inline-block','textAlign':'center','vertical-align': 'middle'}
                             ),
                             html.Div(
-                                dcc.Dropdown(
-                                    id = 'dropdown_column_2',
-                                    options=[
-                                        {'label': 'Integer', 'value': 'int64'},
-                                        {'label': 'Float', 'value': 'float64'},
-                                        {'label': 'String', 'value': 'object'},
-                                        {'label': 'Boolean', 'value': 'bool'},
-                                        {'label': 'Date/Time', 'value': 'datetime64'},
-                                        {'label': 'Categorical', 'value': 'category'},
-                                    ],
-#                                    value='int64'
-                                ),
-                                style = {'width':'25%','display': 'inline-block','vertical-align': 'middle'}
-                            )
+                                children = [
+                                    html.Div( #Check updateMapSelect in visualization for example of dynamically changing list entries
+                                        dcc.Dropdown(
+                                            id = 'dropdown_column_1',
+                                            options=[{'label': 'Import data to get started', 'value': '0'}],
+                                            value="0",
+                                        ),
+                                        style = {'width':'60%','display': 'inline-block','vertical-align': 'middle'}
+                                    ),
+                                    html.Div(
+                                        dcc.Dropdown(
+                                            id = 'dropdown_column_2',
+                                            options=[
+                                                {'label': 'Integer', 'value': 'int64'},
+                                                {'label': 'Float', 'value': 'float64'},
+                                                {'label': 'String', 'value': 'object'},
+                                                {'label': 'Boolean', 'value': 'bool'},
+                                                {'label': 'Date/Time', 'value': 'datetime64'},
+                                                {'label': 'Categorical', 'value': 'category'},
+                                            ],
+                                        ),
+                                        style = {'width':'40%','display': 'inline-block','vertical-align': 'middle'}
+                                    ),
+                                ],
+                            ),
                         ],
-                        style = {'width':'60%','display': 'inline-block','vertical-align': 'middle'}
-                    )
-                #could also put below 2 in 1 div and do width 40%,textalign center on div to center all ipv manual
+                        style = {'width':'40%','display': 'inline-block','vertical-align': 'middle'}
+                    ),
+                    html.Div(
+                        html.H6("  "), #Creates a white space
+                        style = {'width': '10%','display': 'inline-block','vertical-align': 'middle'}
+                    ),
+                    html.Div(
+                        id = 'Anomaly_Checking',
+                        children = [
+                            html.Div(
+                                html.H6("Inspect found anomalies per column, change column type or delete columns that are not anomalous"),
+                                style = {'width':'100%','display': 'inline-block','textAlign':'center','vertical-align': 'middle'}
+                            ),
+                            html.Div(
+                                children = [
+                                    html.Div(
+                                        dcc.Dropdown(
+                                            id = 'dropdown_anomaly_1',
+                                            options = [{'label': 'Import data to get started', 'value': ''}],
+                                            value='',
+                                        ),
+                                        style = {'width': '60%','display': 'inline-block','vertical-align': 'middle'}
+                                    ),
+                                    html.Div(
+                                        dcc.Dropdown(
+                                            id = 'dropdown_anomaly_2',
+                                        ),
+                                        style = {'width': '40%','display': 'inline-block','vertical-align': 'middle'}
+                                    ),
+                                ],
+                            ),
+                            html.Div(
+                                html.Button('Selected column does not contain anomalies', id='anomaliesbutton'),
+                            ),
+                        ],
+                        style = {'width':'40%','display': 'inline-block','vertical-align': 'middle'}
+                    ),
+                    html.Div(
+                        html.H6("  "), #Creates a white space
+                        style = {'width': '5%','display': 'inline-block','vertical-align': 'middle'}
+                    ),
                 ],
                 style = {'vertical-align': 'middle'}
-
             ),
         #Cleaning Options Layer 2: Missing Values & Duplicated Rows
             html.Div(

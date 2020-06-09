@@ -41,7 +41,7 @@ def createDataPreview(change):
     State('upload-data', 'last_modified')]
 )
 def store_data(data_contents, data_name, data_date):
-    if data_contents is None:
+    if data_contents == None:
         # prevent the None callbacks is important with the store component.
         # you don't want to update the store for nothing.
         raise PreventUpdate
@@ -82,15 +82,16 @@ def createDataResult(click):
     [Input('button','n_clicks')],
     [State('columnStorage', 'data'),
     State('missingValues', 'value'),
+    State('dropdown_outliers', 'value'),
     State('dropdown_normalization', 'value'),
     State('dropdown_standardization', 'value'),
     State('DuplicatedRows','value')],
 )
-def processData(click, columnData, missingValues, normalizationColumns, standardizationColumns, removeDuplicateRows):
+def processData(click, columnData, missingValues, handleOutliers, normalizationColumns, standardizationColumns, removeDuplicateRows):
     if click != None:
         print('Starting processing, this can take a while')
         print(columnData)
-        theData.startCleaning(columnData, missingValues, normalizationColumns, standardizationColumns, removeDuplicateRows)
+        theData.startCleaning(columnData, missingValues, handleOutliers, normalizationColumns, standardizationColumns, removeDuplicateRows)
         return 1
     return None
 
@@ -109,9 +110,9 @@ def createColumnList(prevData,col2,col1,colData):
     last_event = ctx.triggered[0]['prop_id'].split('.')[0]
 
     #If already initialized, change column based on chosen type
-    if colData is not None:
+    if colData != None:
         if last_event == 'dropdown_column_2':
-            if col2 is '':
+            if col2 == '':
                 #This means that the user hasn't chosen a datatype yet, so it shouldnt update
                 raise PreventUpdate
             print('updating Column Storage')
@@ -148,7 +149,7 @@ def createColumnList(prevData,col2,col1,colData):
 
 
     #Otherwise, initialize column list
-    if last_event == 'PreviewDataTable' and prevData is not None:
+    if last_event == 'PreviewDataTable' and prevData != None:
         dataFrame = previewData
         columnTypeList = list()
         columnList = list(dataFrame.columns)
@@ -182,7 +183,7 @@ def updateColumnChooseNames(colData,col1,col2):
 #    if ts is None:
 #        raise PreventUpdate
 
-    if colData is not None:
+    if colData != None:
         print('updating Column 1')
         print(col2)
         returnList = []
@@ -198,12 +199,12 @@ def updateColumnChooseNames(colData,col1,col2):
     [State('columnStorage', 'data')],
 )
 def updateDColumnChooseValues(col1,colData):
-    if colData is not None:
+    if colData != None:
         print('updating Column 2')
         i = 0
         for row in colData:
             i = i + 1
-            if i is col1:
+            if i == col1:
                 return row[1]
             return ''
 
@@ -213,7 +214,7 @@ def updateDColumnChooseValues(col1,colData):
     [State('dropdown_normalization', 'value')],
 )
 def updateNormalizationColumns(colData,norm):
-    if colData is not None:
+    if colData != None:
         print('updating Normalization Column')
         returnList = []
         for row in colData:
@@ -227,10 +228,57 @@ def updateNormalizationColumns(colData,norm):
     [State('dropdown_standardization', 'value')],
 )
 def updateStandardizationColumns(colData,norm):
-    if colData is not None:
+    if colData != None:
         print('updating Standardization Column')
         returnList = []
         for row in colData:
             returnList.append({'label': row[0]+':'+row[1], 'value': row[0]})
         return returnList
     return [{'label': 'Import data to get started', 'value': '0'}]
+
+#Anomaly Callbacks
+@app.callback(
+    Output('dropdown_anomaly_1', 'options'),
+    [Input('columnStorage','data'),
+    Input('anomaliesbutton','n_clicks')],
+    [State('dropdown_anomaly_1','options'),
+    State('dropdown_anomaly_1','value')],
+)
+def input_anomaly_columnList(colData,click,options,value):
+    ctx = dash.callback_context
+    last_event = ctx.triggered[0]['prop_id'].split('.')[0]
+    print('last event: ' + last_event)
+
+    if colData != None and last_event == 'columnStorage':
+        print('updating Anomaly Column List')
+        returnList = []
+        for key in theData.anomalies:
+            returnList.append({'label': key, 'value': key})
+        return returnList
+
+    elif click != None and last_event is 'anomaliesbutton':
+        print('deleting column from anomalylist')
+        returnList = []
+        for item in options:
+            if item['value'] is not value:
+                returnList.append(item)
+            else:
+                theData.remove_anomaly_prediction(value)
+        return returnList
+    print('skipping anomalylist')
+    return []
+
+
+@app.callback(
+    Output('dropdown_anomaly_2', 'options'),
+    [Input('dropdown_anomaly_1','value')],
+)
+def input_anomaly_anomalyList(anomalyCol):
+    print('editing anomaly list')
+    if anomalyCol != '':
+        returnList = []
+        for item in theData.anomalies.get(anomalyCol):
+            print(item)
+            returnList.append({'label': item, 'value': item})
+        return returnList
+    return [{'label': 'Import data to get started', 'value': ''}]
