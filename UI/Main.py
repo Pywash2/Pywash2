@@ -18,11 +18,10 @@ def MainLayout():
                         children = "Welcome to the Pywash browser interface",
                         style = {'textAlign':'center'}
                     ),
-                    html.H4(
-                        children = "(In development)",
-                        style = {'textAlign':'center'}
-                    ),
                 ]
+            ),
+            html.Div( #empty space
+                style = {'height':'25px'},
             ),
             #Load Data Section
             html.Div(
@@ -34,15 +33,12 @@ def MainLayout():
                             html.A('Drag & drop csv or click here to get started')
                         ],
                         multiple = False,
-                        style = {'textAlign':'center','display': 'inline-block'}
+                        style = {'textAlign':'center','display': 'inline-block','border':'3px dashed black','padding':'5px','font-weight':'bold'}
                     ),
                 ],
                 style = {'textAlign':'center'}
             ),
-
             DataCleaningUI(),
-
             VisualizationUI(),
-
         ]
     )

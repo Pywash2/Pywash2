@@ -9,6 +9,7 @@ import dash_table
 from dash.exceptions import PreventUpdate
 
 from PyWash import SharedDataFrame
+from UI.MakeVisualizations import *
 
 #These contain the imported data as SharedDataFrame objects
 #originalData has the dataset as imported, previewData has the data shown when importing the dataset
@@ -19,6 +20,7 @@ previewData = None
 #Put Data in Preview Table
 @app.callback(
     [Output('PreviewDataTable', 'columns'),
+    Output('PreviewDataTable', 'style_cell_conditional'),
     Output('PreviewDataTable', 'data')],
     [Input('dataUploaded', 'data')],
 )
@@ -30,7 +32,19 @@ def createDataPreview(change):
         return([
             {"name": i, "id": i, "deletable": True, "renamable": True,} for i in df.columns
         ],
-        df.to_dict('records'))
+        create_conditional_style(df.columns),
+        df.to_dict('records')
+        )
+
+def create_conditional_style(columns): #Fix headers of dataframe columns not fitting, taken from https://github.com/plotly/dash-table/issues/432\
+    css=[]
+    for col in columns:
+        name_length = len(col)
+        pixel = 50 + round(name_length*7)
+        pixel = str(pixel) + "px"
+        css.append({'if': {'column_id': col}, 'minWidth': pixel})
+    print(css)
+    return css
 
 
 # Load Data
@@ -58,23 +72,22 @@ def store_data(data_contents, data_name, data_date):
 
 #Put Data in Result Table
 @app.callback(
-    Output('result_data', 'children'),
+    [Output('ResultDataTable', 'columns'),
+    Output('ResultDataTable', 'style_cell_conditional'),
+    Output('ResultDataTable', 'data')],
     [Input('dataProcessed','data')]
 )
-def createDataResult(click):
-    if click != None:
+def createDataResult(change):
+    if theData is not None:
         df = theData.get_dataframe()
-        return [html.Div([
-            html.H5("Data Preview"),
-            dash_table.DataTable(
-                id='ResultDataTable',
-                columns=[
-                    {"name": i, "id": i, "deletable": True} for i in df.columns
-                ],
-                data=df.to_dict('records'),
-            ),
-        ])]
-    return None
+        if df is not None:
+            return ([
+                {"name": i, "id": i, "deletable": True} for i in df.columns
+            ],
+            create_conditional_style(df.columns),
+            df.to_dict('records')
+            )
+    return ([{"id": " ","name": " "}],[{}],[{}])
 
 #Change data based on selected actions
 @app.callback(
@@ -94,7 +107,6 @@ def processData(click, columnData, missingValues, handleOutliers, normalizationC
         theData.startCleaning(columnData, missingValues, handleOutliers, normalizationColumns, standardizationColumns, removeDuplicateRows)
         return 1
     return None
-
 
 #Create column list based on dataTable
 @app.callback(
@@ -121,7 +133,6 @@ def createColumnList(prevData,col2,col1,colData):
             for row in colData:
                 if row[0] == col1:
                     row[1] = str(col2)
-                    # TODO
 
             return colData
         #Update preprocessing data based on changes in preview table
@@ -140,13 +151,6 @@ def createColumnList(prevData,col2,col1,colData):
                 i += 1
             print(prevList)
             return prevList
-#            columnTypeList = list()
-#            columnList = list(prevData.columns)
-#            for item in columnList:
-#                x = [item,str(dataFrame[item].dtype)]
-#                columnTypeList.append(x)
-#            return columnTypeList
-
 
     #Otherwise, initialize column list
     if last_event == 'PreviewDataTable' and prevData != None:
@@ -174,14 +178,11 @@ def initiate_stages(click):
 # Data Cleaning Callbacks
 @app.callback(
     Output('dropdown_column_1', 'options'),
-#    Input('columnStorage', 'modified_timestamp'), #Hack, because empty storage creates issues
     [Input('columnStorage', 'data')],
     [State('dropdown_column_1', 'value'),
     State('dropdown_column_2', 'value')],
 )
 def updateColumnChooseNames(colData,col1,col2):
-#    if ts is None:
-#        raise PreventUpdate
 
     if colData != None:
         print('updating Column 1')
@@ -256,7 +257,7 @@ def input_anomaly_columnList(colData,click,options,value):
             returnList.append({'label': key, 'value': key})
         return returnList
 
-    elif click != None and last_event is 'anomaliesbutton':
+    elif click != None and last_event == 'anomaliesbutton':
         print('deleting column from anomalylist')
         returnList = []
         for item in options:
