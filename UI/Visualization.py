@@ -12,9 +12,16 @@ def VisualizationUI():
             html.Div(
                 id = 'result_data',
                 children = [
+                    html.Div(
+                        [
+                            html.H5("Data Preview"),
+                            dash_table.DataTable(
+                                id='ResultDataTable',
+                            ),
+                        ],
+                    ),
                 ],
-#                style = {'width': '50%','textAlign':'center','display': 'inline-block'}
-            )
+            ),
         ],
         style = {'display': 'none'}
     )
