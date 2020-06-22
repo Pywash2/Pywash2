@@ -9,7 +9,6 @@ import dash_table
 from dash.exceptions import PreventUpdate
 
 from PyWash import SharedDataFrame
-from UI.MakeVisualizations import *
 
 #These contain the imported data as SharedDataFrame objects
 #originalData has the dataset as imported, previewData has the data shown when importing the dataset
