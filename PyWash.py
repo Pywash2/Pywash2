@@ -1,5 +1,5 @@
 from methods.BandA.Normalization import normalize
-from methods.BandA.OutlierDetector import identify_outliers, estimate_contamination
+from methods.BandA.OutlierDetector import identify_outliers, estimate_contamination, outlier_ensemble
 from methods.BandB.ptype.Ptype import Ptype
 from methods.BandB.MissingValues import handle_missing
 from methods.BandC.ParserUtil import assign_parser
@@ -171,19 +171,23 @@ class SharedDataFrame:
         return self.data
 
     def handleOutliers(self,handleNum):
-        contamination = estimate_contamination(self.data)
-        setting = [0,7,9]
-        self.data = self.outlier(setting,contamination)
+        # TODO allow user to choose this method if current method will probably take too long
+        # contamination = estimate_contamination(self.data)
+        # setting = [0,7,9]
+        # self.data = self.outlier(setting,contamination)
+
+        self.data = outlier_ensemble(self.data)
+
         if handleNum == '1':
             #Testing
             print(list(self.data.columns.values))
             #drop all outlier columns except prediction, which is renamed to 'outlier' for clarity
-            self.data = self.data.drop(['anomaly_score','probability'],axis = 1)
+            self.data = self.data.drop(['anomaly_score'],axis = 1)
             self.data.rename(columns={'prediction': 'outlier'})
         if handleNum == '2':
             #Remove detected outliers, drop all outlier columns
             self.data = self.data[self.data.prediction != 1]
-            self.data = self.data.drop(['anomaly_score','probability','prediction'],axis = 1)
+            self.data = self.data.drop(['anomaly_score','prediction'],axis = 1)
 
     def normalizeColumns(self,normalizationColumns):
         """ Normalize columns selected for removal in preview """
