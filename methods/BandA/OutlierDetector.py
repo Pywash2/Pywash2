@@ -1,5 +1,5 @@
 import random
-
+from sklearn import preprocessing
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -124,3 +124,73 @@ def identify_outliers(df, features, contamination=0.1, algorithms=['Isolation Fo
                subset=df_sorted.columns[:-3])
 
     return df_sorted, df_styled
+
+
+def outlier_ensemble(df):
+    """" ensemble method based on the paper:
+    An unsupervised approach for combining scores of outlier detection techniques, based on similarity measures"""
+
+    df_numeric = df.select_dtypes(include=[np.number])  # keep only numeric type features
+    algorithms = [MCD(), PCA(), knn(), ABOD(), HBOS(), LOF(), OCSVM(), IForest()]
+    d = len(df_numeric.columns)
+    anomaly_scores_matr = []
+    for clf in algorithms:
+        # sample features
+        nr_of_features = np.random.randint(low=int(d / 2), high=d)
+        sampled_features = list(np.random.choice(d, nr_of_features, replace=False))
+        df_numeric_sample = df_numeric.iloc[:, sampled_features]
+
+        # run classifier
+        clf.fit(X=df_numeric_sample)
+        anomaly_score = clf.decision_function(df_numeric_sample).reshape(-1, 1)
+        anomaly_score = list(preprocessing.StandardScaler().fit_transform(anomaly_score).flatten())  # standardize
+        anomaly_scores_matr.append(anomaly_score)
+
+    anomaly_scores_matr = pd.DataFrame(np.array(anomaly_scores_matr).T)
+
+    # Create votes matrix multiple votes
+    votes_matr = np.zeros(anomaly_scores_matr.shape, dtype='int')
+    for col in anomaly_scores_matr:
+        IQR_col = anomaly_scores_matr[col].quantile(0.75) - anomaly_scores_matr[col].quantile(0.25)
+
+        for col in anomaly_scores_matr:
+            votes = anomaly_scores_matr[anomaly_scores_matr[col] > 1.5 * IQR_col].index
+            votes_matr[list(votes), col] += 1
+
+    votes_matr = pd.DataFrame(votes_matr)
+
+    # determine weights
+    # EDCV
+    weights = []
+    C = anomaly_scores_matr.corr()
+    for i in range(len(algorithms)):
+        weight = (C[i].sum() - 1) / (len(algorithms) - 1)
+        weights.append(weight)
+    weights = np.array(weights)
+
+    # combine scores to get final score:
+    final_score = []
+    for i in range(len(anomaly_scores_matr)):
+        F_final = (anomaly_scores_matr.iloc[i] * votes_matr.iloc[i] * weights).sum() / len(algorithms)
+        final_score.append(F_final)
+
+    final_score = np.array(final_score)
+
+    # Regular thresholding
+    # predictions = (final_score > (np.percentile(final_score, 75) + 1.5 * (
+    #             np.percentile(final_score, 75) - np.percentile(final_score, 25))).astype(int))
+
+    # Two stage thresholding
+    mask_stage1 = final_score <= (np.percentile(final_score, 75) + 1.5 * (
+                np.percentile(final_score, 75) - np.percentile(final_score, 25)))
+    threshold = np.percentile(final_score[mask_stage1], 75) + 1.5 * (
+                np.percentile(final_score[mask_stage1], 75) - np.percentile(final_score[mask_stage1], 25))
+    predictions = (final_score > threshold).astype(int)
+
+    df_sorted = df.copy()
+    df_sorted['anomaly_score'] = final_score
+    df_sorted['prediction'] = predictions
+    print(predictions.sum())
+    df_sorted = df_sorted.sort_values(by='anomaly_score', ascending=False)
+
+    return df_sorted
