@@ -75,8 +75,8 @@ class SharedDataFrame:
             file.write(string)
 
         # TODO implement user interaction to change anomalies
-        #self.replace_anomalies()
-        self.data = self.set_data_types()
+        # self.replace_anomalies()
+        # self.data = self.set_data_types()
 
     def set_data(self, df):
         """ Sets an pre-parsed DataFrame as the data of the SharedDataFrame """
@@ -90,8 +90,8 @@ class SharedDataFrame:
             file.write(string)
 
         # TODO implement user interaction to change anomalies
-        #self.replace_anomalies()
-        self.data = self.set_data_types()
+        # self.replace_anomalies()
+        # self.data = self.set_data_types()
 
     def remove(self, indices):
         self.data = self.data.drop(indices)
@@ -150,24 +150,53 @@ class SharedDataFrame:
                       removeDuplicates):
         """ Main data cleaning function, use function defined below this one """
         print('changing column types')
+
+        self.replace_anomalies()
+        self.data = self.set_data_types()
+
         self.changeColumns(columnData)
         if removeDuplicates == True:
             print('removing duplicates')
             self.removeDuplicateRows()
+            with open('event_logger.txt', 'a') as file:
+                string = 'Duplicate rows have been removed' + '\n' + '\n'
+                file.write(string)
+
         if handleMissing == '1':
             # Currently errors sometimes, rip
             print('handling missing data')
             # 'remove' translates to: Jury-rig it to just drop the rows with NAs
             self.missing('remove', ['n/a', 'na', '--', '?'])  # <- these are detected NA-s, put in here :)
+            #TODO add event logger once jonas has integrated missing value imputation
+
         if int(handleOutlier) > 0:
             print('handling outliers')
             self.handleOutliers(handleOutlier)
+
+            with open('event_logger.txt', 'a') as file:
+                if int(handleOutlier) == 1:
+                    string = 'Outliers have been detected and marked using Ptype from Ceritli et al. '+ '\n' + '\n'
+                else:
+                    string = 'Outliers have been detected and removed using Ptype from Ceritli et al. '+ '\n' + '\n'
+
+                file.write(string)
+
         if normalizationColumns is not None:
             print('handling normalization')
             self.normalizeColumns(normalizationColumns)
+
+            with open('event_logger.txt', 'a') as file:
+                string = 'The following columns have been normalized: ' + str(normalizationColumns) + '\n' + '\n'
+                file.write(string)
+
         if standardizationColumns is not None:
             print('handling standardization')
             self.standardizeColumns(standardizationColumns)
+
+            with open('event_logger.txt', 'a') as file:
+                string = 'The following columns have been standardized: ' + str(standardizationColumns) + '\n' + '\n'
+                file.write(string)
+
         print('done cleaning!')
 
     def changeColumns(self, columnData):
@@ -181,11 +210,6 @@ class SharedDataFrame:
             if remove == True:
                 self.data = self.data.drop(columns=item)
                 print('column removed: ' + str(item))
-        # Now change the datatypes of the leftover columns
-        for item in columnData:
-            # Check if needs to be removed
-            self.data = self.data.astype({item[0]: item[1]})
-        print(self.data.dtypes)
 
     def removeDuplicateRows(self):
         print('Removing duplicates')
@@ -283,6 +307,7 @@ class SharedDataFrame:
             try:
                 df = df.astype(dict(item))
             except:
+                print(item)
                 pass
         return df
 
@@ -296,6 +321,8 @@ class SharedDataFrame:
     def replace_anomalies(self):
         df = self.data
         anomalies = self.anomalies
+        print('BBBB')
+        print(anomalies)
         for col_name in anomalies:
             df[col_name][df[col_name].isin(anomalies[col_name])] = None
 

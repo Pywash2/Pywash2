@@ -156,8 +156,9 @@ def createColumnList(prevData,col2,col1,colData):
         dataFrame = previewData
         columnTypeList = list()
         columnList = list(dataFrame.columns)
+        types = theData.col_types
         for item in columnList:
-            x = [item,str(dataFrame[item].dtype)]
+            x = [item,str(types[item])]
             print(x)
             columnTypeList.append(x)
         return columnTypeList
@@ -185,6 +186,14 @@ def updateColumnChooseNames(colData,col1,col2):
 
     if colData != None:
         print('updating Column 1')
+
+        if col2 != None:
+            # Event Logger
+            with open('event_logger.txt', 'a') as file:
+
+                string = 'The Data type of column ' + str(col1) + ' has been changed to ' + str(col2) + '\n \n'
+                file.write(string)
+
         print(col2)
         returnList = []
         for row in colData:
@@ -201,13 +210,6 @@ def updateColumnChooseNames(colData,col1,col2):
 def updateDColumnChooseValues(col1,colData):
     if colData != None:
         print('updating Column 2')
-
-        # Event Logger
-        with open('event_logger.txt', 'a') as file:
-            type_col = [i[1] for i in colData if i[0] == col1][0]
-            string = 'The Data type of column ' + str(col1) + ' has been changed to ' + str(type_col) + '\n \n'
-            file.write(string)
-
         i = 0
         for row in colData:
             i = i + 1
@@ -265,6 +267,11 @@ def input_anomaly_columnList(colData,click,options,value):
 
     elif click != None and last_event == 'anomaliesbutton':
         print('deleting column from anomalylist')
+
+        with open('event_logger.txt', 'a') as file:
+            string = 'All predicted anomalies of column: ' + str(value) + ' have been unmarked as anomalies.' + '\n' + '\n'
+            file.write(string)
+
         returnList = []
         for item in options:
             if item['value'] != value:
@@ -285,7 +292,7 @@ def input_anomaly_anomalyList(anomalyCol):
     if anomalyCol != '':
         returnList = []
         for item in theData.anomalies.get(anomalyCol):
-            print(item)
             returnList.append({'label': item, 'value': item})
+
         return returnList
     return [{'label': 'Import data to get started', 'value': ''}]
