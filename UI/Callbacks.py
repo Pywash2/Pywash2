@@ -189,7 +189,7 @@ def updateColumnChooseNames(colData,col1,col2):
 
         if col2 != None:
             # Event Logger
-            with open('event_logger.txt', 'a') as file:
+            with open('eventlog.txt', 'a') as file:
 
                 string = 'The Data type of column ' + str(col1) + ' has been changed to ' + str(col2) + '\n \n'
                 file.write(string)
@@ -268,7 +268,7 @@ def input_anomaly_columnList(colData,click,options,value):
     elif click != None and last_event == 'anomaliesbutton':
         print('deleting column from anomalylist')
 
-        with open('event_logger.txt', 'a') as file:
+        with open('eventlog.txt', 'a') as file:
             string = 'All predicted anomalies of column: ' + str(value) + ' have been unmarked as anomalies.' + '\n' + '\n'
             file.write(string)
 

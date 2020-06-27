@@ -25,8 +25,8 @@ class SharedDataFrame:
         """
 
         # Event Logger
-        with open('event_logger.txt', 'a') as file:
-            string = 'data with file path: ' + str(locals()['file_path']) + ' is uploaded' + '\n' + '\n'
+        with open('eventlog.txt', 'a') as file:
+            string = 'Data with file path: ' + str(locals()['file_path']) + ' is uploaded' + '\n' + '\n'
             file.write(string)
 
         self.verbose = verbose
@@ -44,7 +44,7 @@ class SharedDataFrame:
 
             self.parser = assign_parser(file_path=file_path, contents=contents, verbose=verbose)
 
-            with open('event_logger.txt', 'a') as file:
+            with open('eventlog.txt', 'a') as file:
                 string = 'Parser to read data is assigned' + '\n' + '\n'
                 file.write(string)
 
@@ -69,8 +69,8 @@ class SharedDataFrame:
         self.col_types, self.anomalies, self.missing_values = self.infer_data_types_ptype()
 
         # Event Logger
-        with open('event_logger.txt', 'a') as file:
-            string = 'column types of the data have been predicted using PType. Anomalies and Missing values have ' \
+        with open('eventlog.txt', 'a') as file:
+            string = 'Column types of the data have been predicted using PType. Anomalies and Missing values have ' \
                      'been annotated \n \n'
             file.write(string)
 
@@ -84,8 +84,8 @@ class SharedDataFrame:
         self.col_types, self.anomalies, self.missing_values = self.infer_data_types_ptype()
 
         # Event Logger
-        with open('event_logger.txt', 'a') as file:
-            string = 'column types of the data have been predicted using PType. Anomalies and Missing values have ' \
+        with open('eventlog.txt', 'a') as file:
+            string = 'Column types of the data have been predicted using PType. Anomalies and Missing values have ' \
                      'been annotated \n \n'
             file.write(string)
 
@@ -158,7 +158,7 @@ class SharedDataFrame:
         if removeDuplicates == True:
             print('removing duplicates')
             self.removeDuplicateRows()
-            with open('event_logger.txt', 'a') as file:
+            with open('eventlog.txt', 'a') as file:
                 string = 'Duplicate rows have been removed' + '\n' + '\n'
                 file.write(string)
 
@@ -173,7 +173,7 @@ class SharedDataFrame:
             print('handling outliers')
             self.handleOutliers(handleOutlier)
 
-            with open('event_logger.txt', 'a') as file:
+            with open('eventlog.txt', 'a') as file:
                 if int(handleOutlier) == 1:
                     string = 'Outliers have been detected and marked using Ptype from Ceritli et al. '+ '\n' + '\n'
                 else:
@@ -185,7 +185,7 @@ class SharedDataFrame:
             print('handling normalization')
             self.normalizeColumns(normalizationColumns)
 
-            with open('event_logger.txt', 'a') as file:
+            with open('eventlog.txt', 'a') as file:
                 string = 'The following columns have been normalized: ' + str(normalizationColumns) + '\n' + '\n'
                 file.write(string)
 
@@ -193,7 +193,7 @@ class SharedDataFrame:
             print('handling standardization')
             self.standardizeColumns(standardizationColumns)
 
-            with open('event_logger.txt', 'a') as file:
+            with open('eventlog.txt', 'a') as file:
                 string = 'The following columns have been standardized: ' + str(standardizationColumns) + '\n' + '\n'
                 file.write(string)
 
