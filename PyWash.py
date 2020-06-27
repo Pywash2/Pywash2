@@ -3,8 +3,8 @@ from methods.BandA.OutlierDetector import identify_outliers, estimate_contaminat
 from methods.BandB.ptype.Ptype import Ptype
 from methods.BandB.MissingValues import handle_missing
 from methods.BandC.ParserUtil import assign_parser
-#from src.BandC.Exports import *
-#from src.Exceptions import *
+# from src.BandC.Exports import *
+# from src.Exceptions import *
 from pandas.core.frame import DataFrame
 import pandas as pd
 
@@ -23,6 +23,12 @@ class SharedDataFrame:
          or a dataset as string needed to be parsed
          or a parsed DataFrame can be given to be used
         """
+
+        # Event Logger
+        with open('event_logger.txt', 'a') as file:
+            string = 'data with file path: ' + str(locals()['file_path']) + ' is uploaded' + '\n' + '\n'
+            file.write(string)
+
         self.verbose = verbose
         self.file_path = file_path
         self.data = None
@@ -34,7 +40,14 @@ class SharedDataFrame:
         self.accuracy_ptypes = None
         # When a path to a file or the contents are given, parse the file and load the data
         if file_path is not None:
+            # Event Logger
+
             self.parser = assign_parser(file_path=file_path, contents=contents, verbose=verbose)
+
+            with open('event_logger.txt', 'a') as file:
+                string = 'Parser to read data is assigned' + '\n' + '\n'
+                file.write(string)
+
             self._load_data()
             self.name = self.parser.name
         # When a DataFrame is given, set the DataFrame as the SharedDataFrame data
@@ -43,9 +56,9 @@ class SharedDataFrame:
         if name is not None:
             self.name = name
 
-#    def __repr__(self):
-#        # TODO, create representation
-#        NotImplementedError("Create")
+    #    def __repr__(self):
+    #        # TODO, create representation
+    #        NotImplementedError("Create")
 
     def __str__(self) -> str:
         # SharedDataFrames are represented by their file_name and the dimensions of the data
@@ -54,23 +67,34 @@ class SharedDataFrame:
     def _load_data(self):
         self.data = self.parser.parse()
         self.col_types, self.anomalies, self.missing_values = self.infer_data_types_ptype()
+
+        # Event Logger
+        with open('event_logger.txt', 'a') as file:
+            string = 'column types of the data have been predicted using PType. Anomalies and Missing values have ' \
+                     'been annotated \n \n'
+            file.write(string)
+
         # TODO implement user interaction to change anomalies
-        self.replace_anomalies()
+        #self.replace_anomalies()
         self.data = self.set_data_types()
 
-
     def set_data(self, df):
-            """ Sets an pre-parsed DataFrame as the data of the SharedDataFrame """
-            self.data = df
-            self.col_types, self.anomalies, self.missing_values = self.infer_data_types_ptype()
+        """ Sets an pre-parsed DataFrame as the data of the SharedDataFrame """
+        self.data = df
+        self.col_types, self.anomalies, self.missing_values = self.infer_data_types_ptype()
 
-            # TODO implement user interaction to change anomalies
-            self.replace_anomalies()
-            self.data = self.set_data_types()
+        # Event Logger
+        with open('event_logger.txt', 'a') as file:
+            string = 'column types of the data have been predicted using PType. Anomalies and Missing values have ' \
+                     'been annotated \n \n'
+            file.write(string)
 
+        # TODO implement user interaction to change anomalies
+        #self.replace_anomalies()
+        self.data = self.set_data_types()
 
     def remove(self, indices):
-            self.data = self.data.drop(indices)
+        self.data = self.data.drop(indices)
 
     def get_dataframe(self):
         return self.data
@@ -122,7 +146,8 @@ class SharedDataFrame:
         return previewData
 
     # Data Cleaning functions #####
-    def startCleaning(self, columnData, handleMissing, handleOutlier, normalizationColumns, standardizationColumns, removeDuplicates):
+    def startCleaning(self, columnData, handleMissing, handleOutlier, normalizationColumns, standardizationColumns,
+                      removeDuplicates):
         """ Main data cleaning function, use function defined below this one """
         print('changing column types')
         self.changeColumns(columnData)
@@ -130,10 +155,10 @@ class SharedDataFrame:
             print('removing duplicates')
             self.removeDuplicateRows()
         if handleMissing == '1':
-        #Currently errors sometimes, rip
+            # Currently errors sometimes, rip
             print('handling missing data')
-            #'remove' translates to: Jury-rig it to just drop the rows with NAs
-            self.missing('remove', ['n/a', 'na', '--', '?']) #<- these are detected NA-s, put in here :)
+            # 'remove' translates to: Jury-rig it to just drop the rows with NAs
+            self.missing('remove', ['n/a', 'na', '--', '?'])  # <- these are detected NA-s, put in here :)
         if int(handleOutlier) > 0:
             print('handling outliers')
             self.handleOutliers(handleOutlier)
@@ -145,9 +170,9 @@ class SharedDataFrame:
             self.standardizeColumns(standardizationColumns)
         print('done cleaning!')
 
-    def changeColumns(self,columnData):
+    def changeColumns(self, columnData):
         """ Remove duplicate rows if selected in preview """
-        #Check if columns need to be removed
+        # Check if columns need to be removed
         for item in self.data.columns:
             remove = True
             for item2 in columnData:
@@ -155,11 +180,11 @@ class SharedDataFrame:
                     remove = False
             if remove == True:
                 self.data = self.data.drop(columns=item)
-                print('column removed: '+str(item))
-        #Now change the datatypes of the leftover columns
+                print('column removed: ' + str(item))
+        # Now change the datatypes of the leftover columns
         for item in columnData:
-            #Check if needs to be removed
-            self.data = self.data.astype({item[0]:item[1]})
+            # Check if needs to be removed
+            self.data = self.data.astype({item[0]: item[1]})
         print(self.data.dtypes)
 
     def removeDuplicateRows(self):
@@ -167,10 +192,10 @@ class SharedDataFrame:
         rows = len(self.data.index)
         """ Remove columns selected for removal in preview """
         self.data.drop_duplicates(inplace=True)
-        print('rows removed: '+str(rows - len(self.data.index)))
+        print('rows removed: ' + str(rows - len(self.data.index)))
         return self.data
 
-    def handleOutliers(self,handleNum):
+    def handleOutliers(self, handleNum):
         # TODO allow user to choose this method if current method will probably take too long
         # contamination = estimate_contamination(self.data)
         # setting = [0,7,9]
@@ -179,29 +204,31 @@ class SharedDataFrame:
         self.data = outlier_ensemble(self.data)
 
         if handleNum == '1':
-            #Testing
+            # Testing
             print(list(self.data.columns.values))
-            #drop all outlier columns except prediction, which is renamed to 'outlier' for clarity
-            self.data = self.data.drop(['anomaly_score'],axis = 1)
+            # drop all outlier columns except prediction, which is renamed to 'outlier' for clarity
+            self.data = self.data.drop(['anomaly_score'], axis=1)
             self.data.rename(columns={'prediction': 'outlier'})
         if handleNum == '2':
-            #Remove detected outliers, drop all outlier columns
+            # Remove detected outliers, drop all outlier columns
             self.data = self.data[self.data.prediction != 1]
-            self.data = self.data.drop(['anomaly_score','prediction'],axis = 1)
+            self.data = self.data.drop(['anomaly_score', 'prediction'], axis=1)
 
-    def normalizeColumns(self,normalizationColumns):
+    def normalizeColumns(self, normalizationColumns):
         """ Normalize columns selected for removal in preview """
-        scale_range='0,1'
+        scale_range = '0,1'
         print(normalizationColumns)
-        self.data = normalize(self.data, normalizationColumns, 'normalize', tuple(int(i) for i in scale_range.split(',')))
-#        self.data = normalize(self.data, columns, setting, tuple(int(i) for i in scale_range.split(',')))
+        self.data = normalize(self.data, normalizationColumns, 'normalize',
+                              tuple(int(i) for i in scale_range.split(',')))
+        #        self.data = normalize(self.data, columns, setting, tuple(int(i) for i in scale_range.split(',')))
         return self.data
 
-    def standardizeColumns(self,standardizationColumns):
+    def standardizeColumns(self, standardizationColumns):
         """ Standardize columns selected for removal in preview """
-        scale_range='0,1'
+        scale_range = '0,1'
         print(standardizationColumns)
-        self.data = normalize(self.data, standardizationColumns, 'standardize', tuple(int(i) for i in scale_range.split(',')))
+        self.data = normalize(self.data, standardizationColumns, 'standardize',
+                              tuple(int(i) for i in scale_range.split(',')))
         return self.data
 
     # BandB functions #####
@@ -225,29 +252,28 @@ class SharedDataFrame:
         types_lst = [convert_dct.get(_type) for _type in predicted.values()]
         types_dct = dict(zip(predicted.keys(), types_lst))
         anomalies = ptype.get_anomaly_predictions()
-        anomalies = {k: v for k, v in anomalies.items() if v} # remove empty lists
+        anomalies = {k: v for k, v in anomalies.items() if v}  # remove empty lists
         missing_vals = ptype.get_missing_data_predictions()
-        missing_vals = { k : v for k,v in missing_vals.items() if v}
+        missing_vals = {k: v for k, v in missing_vals.items() if v}
 
-        integer_cols = [k for k,v in predicted.items() if v == 'integer']
+        integer_cols = [k for k, v in predicted.items() if v == 'integer']
 
         # estimate accuracy
-        accuracy_col = {k:v.max() for k, v in ptype.all_posteriors['demo'].items()}
+        accuracy_col = {k: v.max() for k, v in ptype.all_posteriors['demo'].items()}
 
         # estimate degree of unique values:
-        cat_threshold = 20 # threshold to decide whether an integer column is actually a categorical column
+        cat_threshold = 20  # threshold to decide whether an integer column is actually a categorical column
         df_length = len(df)
         for col in integer_cols:
-            degree = (len(df[col].unique()) / df_length)*100
+            degree = (len(df[col].unique()) / df_length) * 100
             print(degree)
             if degree <= cat_threshold:
                 types_dct[col] = 'category'
-                accuracy_col[col] = 'unknown' # change accuracy of prediction
+                accuracy_col[col] = 'unknown'  # change accuracy of prediction
 
         self.accuracy_ptypes = accuracy_col
 
         return types_dct, anomalies, missing_vals
-
 
     def set_data_types(self):
         # try to change types of columns iteratively
@@ -261,9 +287,9 @@ class SharedDataFrame:
         return df
 
     def remove_anomaly_prediction(self, column_name):
-        #TODO improve anomaly removal. Some anomalies might still be anomalies.
+        # TODO improve anomaly removal. Some anomalies might still be anomalies.
         try:
-            del[self.anomalies[column_name]]
+            del [self.anomalies[column_name]]
         except:
             pass
 

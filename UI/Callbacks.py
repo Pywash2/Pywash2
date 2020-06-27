@@ -201,6 +201,13 @@ def updateColumnChooseNames(colData,col1,col2):
 def updateDColumnChooseValues(col1,colData):
     if colData != None:
         print('updating Column 2')
+
+        # Event Logger
+        with open('event_logger.txt', 'a') as file:
+            type_col = [i[1] for i in colData if i[0] == col1][0]
+            string = 'The Data type of column ' + str(col1) + ' has been changed to ' + str(type_col) + '\n \n'
+            file.write(string)
+
         i = 0
         for row in colData:
             i = i + 1
@@ -260,7 +267,7 @@ def input_anomaly_columnList(colData,click,options,value):
         print('deleting column from anomalylist')
         returnList = []
         for item in options:
-            if item['value'] is not value:
+            if item['value'] != value:
                 returnList.append(item)
             else:
                 theData.remove_anomaly_prediction(value)
