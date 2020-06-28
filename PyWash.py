@@ -220,23 +220,35 @@ class SharedDataFrame:
         return self.data
 
     def handleOutliers(self, handleNum):
-        # TODO allow user to choose this method if current method will probably take too long
-        # contamination = estimate_contamination(self.data)
-        # setting = [0,7,9]
-        # self.data = self.outlier(setting,contamination)
+        
+        #Slow method
+        if handleNum == '1' or handleNum == '2':
+            self.data = outlier_ensemble(self.data)
 
-        self.data = outlier_ensemble(self.data)
+            if handleNum == '1':
+                # drop all outlier columns except prediction, which is renamed to 'outlier' for clarity
+                self.data = self.data.drop(['anomaly_score'], axis=1)
+                self.data.rename(columns={'prediction': 'outlier'})
+            if handleNum == '2':
+                # Remove detected outliers, drop all outlier columns
+                self.data = self.data[self.data.prediction != 1]
+                self.data = self.data.drop(['anomaly_score', 'prediction'], axis=1)
 
-        if handleNum == '1':
-            # Testing
-            print(list(self.data.columns.values))
-            # drop all outlier columns except prediction, which is renamed to 'outlier' for clarity
-            self.data = self.data.drop(['anomaly_score'], axis=1)
-            self.data.rename(columns={'prediction': 'outlier'})
-        if handleNum == '2':
-            # Remove detected outliers, drop all outlier columns
-            self.data = self.data[self.data.prediction != 1]
-            self.data = self.data.drop(['anomaly_score', 'prediction'], axis=1)
+        #Fast method
+        if handleNum == '3' or handleNum == '4':
+            contamination = estimate_contamination(self.data)
+            setting = [0,7,9]
+            self.data = self.outlier(setting,contamination)
+
+            if handleNum == '3':
+                # drop all outlier columns except prediction, which is renamed to 'outlier' for clarity
+                self.data = self.data.drop(['anomaly_score'], axis=1)
+                self.data.rename(columns={'prediction': 'outlier'})
+            if handleNum == '4':
+                # Remove detected outliers, drop all outlier columns
+                self.data = self.data[self.data.prediction != 1]
+                self.data = self.data.drop(['anomaly_score', 'prediction'], axis=1)
+
 
     def normalizeColumns(self, normalizationColumns):
         """ Normalize columns selected for removal in preview """
@@ -324,8 +336,6 @@ class SharedDataFrame:
 
 
     def replace_anomalies(self, column_name, items):
-        print('BBBB')
-        print(anomalies)
         self.data[column_name][self.data[column_name].isin(items)] = None   ###UNTESTED, old application had self.anomalies[column_name] instead of items and could only replace entire columns
         self.remove_anomaly_prediction(column_name, items)
 
