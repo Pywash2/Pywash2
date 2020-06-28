@@ -285,13 +285,9 @@ class SharedDataFrame:
         # estimate accuracy
         accuracy_col = {k: v.max() for k, v in ptype.all_posteriors['demo'].items()}
 
-        # estimate degree of unique values:
-        cat_threshold = 20  # threshold to decide whether an integer column is actually a categorical column
-        df_length = len(df)
+        # estimate category:
         for col in integer_cols:
-            degree = (len(df[col].unique()) / df_length) * 100
-            print(degree)
-            if degree <= cat_threshold:
+            if len(df[col].unique()) <= 10:
                 types_dct[col] = 'category'
                 accuracy_col[col] = 'unknown'  # change accuracy of prediction
 
