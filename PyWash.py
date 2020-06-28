@@ -144,11 +144,12 @@ class SharedDataFrame:
 
         #Remove all remaining anomalies
         print(self.anomalies)
-        for item in self.anomalies: #Every column
+#        anomalyList = self.anomalies.keys()
+        for item in list(self.anomalies): #Every column
             print(item) #Column name
-            remainingAnomalies = self.anomalies[item]
-            print(remainingAnomalies) #Anomalies for colu
-            self.replace_anomalies(item,remainingAnomalies)
+            self.replace_anomalies(item,self.anomalies[item])
+        self.anomalies = {} #Empty anomalies, data is successfully edited afaik but some anomalies remain in list only when doing it in this step
+        print('done with anomalies!')
         self.data = self.set_data_types()
 
         self.changeColumns(columnData)
@@ -315,9 +316,9 @@ class SharedDataFrame:
         return df
 
     def remove_anomaly_prediction(self, column_name, items):
-        print(self.anomalies[column_name])
+        print(items)
         for item in items:
-            print(item)
+            print('deleting item: ' + str(item))
             for i in range(0,len(self.anomalies[column_name])):
                 print(self.anomalies[column_name][i])
                 if item == self.anomalies[column_name][i]:
