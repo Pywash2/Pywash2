@@ -1,7 +1,7 @@
 import dash
 import os
 import pkg_resources
-import importlib
+import sys
 from dash.dependencies import Input, Output, State
 import dash_html_components as html
 import dash_core_components as dcc
@@ -36,6 +36,7 @@ if __name__ == '__main__':
 
         for pkg in packages:
             file.write(pkg + ' has version: ' + str(pkg_resources.get_distribution(pkg).version) + '\n')
+        file.write('Python has version ' + str(sys.version.split(' ')[0]))
         file.write('\n\n\nLog of all functions: \n')
 
     # Run App
