@@ -55,7 +55,7 @@ class SharedDataFrame:
         self.data = self.parser.parse()
         self.col_types, self.anomalies, self.missing_values = self.infer_data_types_ptype()
         # TODO implement user interaction to change anomalies
-        self.replace_anomalies()
+        #        self.replace_anomalies()
         self.data = self.set_data_types()
 
 
@@ -65,7 +65,7 @@ class SharedDataFrame:
             self.col_types, self.anomalies, self.missing_values = self.infer_data_types_ptype()
 
             # TODO implement user interaction to change anomalies
-            self.replace_anomalies()
+            #            self.replace_anomalies()
             self.data = self.set_data_types()
 
 
@@ -209,7 +209,6 @@ class SharedDataFrame:
         """ Infer datatypes using ptype and apply the datatypes to the dataset"""
 
         df = self.data
-
         convert_dct = {'integer': 'int64', 'string': 'object', 'float': 'float64', 'boolean': 'bool',
                        'date-iso-8601': 'datetime64[ns]', 'date-eu': 'datetime64[ns]',
                        'date-non-std-subtype': 'datetime64[ns]', 'date-non-std': 'datetime64[ns]', 'gender': 'category',
@@ -256,18 +255,25 @@ class SharedDataFrame:
                 pass
         return df
 
-    def remove_anomaly_prediction(self, column_name):
-        #TODO improve anomaly removal. Some anomalies might still be anomalies.
-        try:
-            del[self.anomalies[column_name]]
-        except:
-            pass
+    def remove_anomaly_prediction(self, column_name, items):
+        #######################TODO improve anomaly removal. Some anomalies might still be anomalies.
+        print(self.anomalies[column_name])
+        for item in items:
+            print(item)
+            for i in range(0,len(self.anomalies[column_name])):
+                print(self.anomalies[column_name][i])
+                if item == self.anomalies[column_name][i]:
+                    del self.anomalies[column_name][i]
+                    print(self.anomalies[column_name])
+                    print('deleted item ' + str(item))
+                    break
 
-    def replace_anomalies(self):
-        df = self.data
-        anomalies = self.anomalies
-        for col_name in anomalies:
-            df[col_name][df[col_name].isin(anomalies[col_name])] = None
+
+    def replace_anomalies(self, column_name, items):
+
+        self.data[column_name][self.data[column_name].isin(items)] = None   ###UNTESTED, old application had self.anomalies[column_name] instead of items and could only replace entire columns
+        self.remove_anomaly_prediction(column_name, items)
+        #del self.anomalies[column_name]
 
     # BandA functions #####
     def scale(self, columns, setting, scale_range=(0, 1)):
