@@ -74,10 +74,6 @@ class SharedDataFrame:
                      'been annotated \n \n'
             file.write(string)
 
-        # TODO implement user interaction to change anomalies
-        # self.replace_anomalies()
-        # self.data = self.set_data_types()
-
     def set_data(self, df):
         """ Sets an pre-parsed DataFrame as the data of the SharedDataFrame """
         self.data = df
@@ -88,10 +84,6 @@ class SharedDataFrame:
             string = 'Column types of the data have been predicted using PType. Anomalies and Missing values have ' \
                      'been annotated \n \n'
             file.write(string)
-
-        # TODO implement user interaction to change anomalies
-        # self.replace_anomalies()
-        # self.data = self.set_data_types()
 
     def remove(self, indices):
         self.data = self.data.drop(indices)
@@ -151,7 +143,13 @@ class SharedDataFrame:
         """ Main data cleaning function, use function defined below this one """
         print('changing column types')
 
-        self.replace_anomalies()
+        #Remove all remaining anomalies
+        print(self.anomalies)
+        for item in self.anomalies: #Every column
+            print(item) #Column name
+            remainingAnomalies = self.anomalies[item]
+            print(remainingAnomalies) #Anomalies for colu
+            self.replace_anomalies(item,remainingAnomalies)
         self.data = self.set_data_types()
 
         self.changeColumns(columnData)
@@ -220,23 +218,35 @@ class SharedDataFrame:
         return self.data
 
     def handleOutliers(self, handleNum):
-        # TODO allow user to choose this method if current method will probably take too long
-        # contamination = estimate_contamination(self.data)
-        # setting = [0,7,9]
-        # self.data = self.outlier(setting,contamination)
 
-        self.data = outlier_ensemble(self.data)
+        #Slow method
+        if handleNum == '1' or handleNum == '2':
+            self.data = outlier_ensemble(self.data)
 
-        if handleNum == '1':
-            # Testing
-            print(list(self.data.columns.values))
-            # drop all outlier columns except prediction, which is renamed to 'outlier' for clarity
-            self.data = self.data.drop(['anomaly_score'], axis=1)
-            self.data.rename(columns={'prediction': 'outlier'})
-        if handleNum == '2':
-            # Remove detected outliers, drop all outlier columns
-            self.data = self.data[self.data.prediction != 1]
-            self.data = self.data.drop(['anomaly_score', 'prediction'], axis=1)
+            if handleNum == '1':
+                # drop all outlier columns except prediction, which is renamed to 'outlier' for clarity
+                self.data = self.data.drop(['anomaly_score'], axis=1)
+                self.data.rename(columns={'prediction': 'outlier'})
+            if handleNum == '2':
+                # Remove detected outliers, drop all outlier columns
+                self.data = self.data[self.data.prediction != 1]
+                self.data = self.data.drop(['anomaly_score', 'prediction'], axis=1)
+
+        #Fast method
+        if handleNum == '3' or handleNum == '4':
+            contamination = estimate_contamination(self.data)
+            setting = [0,7,9]
+            self.data = self.outlier(setting,contamination)
+
+            if handleNum == '3':
+                # drop all outlier columns except prediction, which is renamed to 'outlier' for clarity
+                self.data = self.data.drop(['anomaly_score'], axis=1)
+                self.data.rename(columns={'prediction': 'outlier'})
+            if handleNum == '4':
+                # Remove detected outliers, drop all outlier columns
+                self.data = self.data[self.data.prediction != 1]
+                self.data = self.data.drop(['anomaly_score', 'prediction'], axis=1)
+
 
     def normalizeColumns(self, normalizationColumns):
         """ Normalize columns selected for removal in preview """
@@ -321,11 +331,14 @@ class SharedDataFrame:
                     print(self.anomalies[column_name])
                     print('deleted item ' + str(item))
                     break
+        for item in self.anomalies:
+            print(self.anomalies[item])
+            if self.anomalies[item] == []:
+                del self.anomalies[item]
+                break #Can only delete item from one column at the same time, so we can only find one
 
 
     def replace_anomalies(self, column_name, items):
-        print('BBBB')
-        print(anomalies)
         self.data[column_name][self.data[column_name].isin(items)] = None   ###UNTESTED, old application had self.anomalies[column_name] instead of items and could only replace entire columns
         self.remove_anomaly_prediction(column_name, items)
 
