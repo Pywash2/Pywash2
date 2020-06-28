@@ -149,9 +149,7 @@ class SharedDataFrame:
     def startCleaning(self, columnData, handleMissing, handleOutlier, normalizationColumns, standardizationColumns,
                       removeDuplicates):
         """ Main data cleaning function, use function defined below this one """
-        print('changing column types')
 
-        self.replace_anomalies()
         self.data = self.set_data_types()
 
         self.changeColumns(columnData)
