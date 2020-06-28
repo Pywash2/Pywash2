@@ -160,8 +160,9 @@ def createColumnList(prevData,col2,col1,colData):
         dataFrame = previewData
         columnTypeList = list()
         columnList = list(dataFrame.columns)
+        types = theData.col_types
         for item in columnList:
-            x = [item,str(dataFrame[item].dtype)]
+            x = [item,str(types[item])]
             print(x)
             columnTypeList.append(x)
         return columnTypeList
@@ -189,6 +190,14 @@ def updateColumnChooseNames(colData,col1,col2):
 
     if colData != None:
         print('updating Column 1')
+
+        if col2 != None:
+            # Event Logger
+            with open('eventlog.txt', 'a') as file:
+
+                string = 'The Data type of column ' + str(col1) + ' has been changed to ' + str(col2) + '\n \n'
+                file.write(string)
+
         print(col2)
         returnList = []
         for row in colData:
@@ -257,6 +266,14 @@ def handleAnomalies(colData,notAnomalies,replaceAnomalies,coloptions,itemvalues,
     last_event = ctx.triggered[0]['prop_id'].split('.')[0]
     if colData != None:
         if notAnomalies != None and last_event == 'anomaliesButtonNotAnomalies':
+          
+            with open('eventlog.txt', 'a') as file:
+                valstring = ''
+                for item in itemvalues:
+                    valstring = valstring + str(item) + ','
+                string = 'From column: ' + str(colvalue) + ', the following anomalies: ' + valstring + ', have been unmarked as anomalies.' + '\n' + '\n'
+                file.write(string)
+               
             print('Not anomalies: deleting item(s) from anomalylist')
             theData.remove_anomaly_prediction(colvalue,itemvalues)
             returnList = []
@@ -306,7 +323,7 @@ def updateAnomaliesListOptions(anomalyCol,bookKeeper):
 def refreshAnomaliesListValue(optionsChanged,clickedSelectAll,clickedNotAnomalies,options,value):
     ctx = dash.callback_context
     last_event = ctx.triggered[0]['prop_id'].split('.')[0]
-
+    
     if last_event == 'dropdown_anomaly_2' or last_event == 'anomaliesButtonNotAnomalies':
         return []
     if clickedSelectAll != None and last_event == 'anomaliesButtonSelectAll':
