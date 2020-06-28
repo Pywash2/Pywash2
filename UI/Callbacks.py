@@ -8,8 +8,7 @@ import dash_table
 from dash.exceptions import PreventUpdate
 
 from PyWash import SharedDataFrame
-
-import plotly.graph_objects as go
+from UI.MakeVisualizations import *
 
 from datetime import datetime
 
@@ -266,14 +265,14 @@ def handleAnomalies(colData,notAnomalies,replaceAnomalies,coloptions,itemvalues,
     last_event = ctx.triggered[0]['prop_id'].split('.')[0]
     if colData != None:
         if notAnomalies != None and last_event == 'anomaliesButtonNotAnomalies':
-          
+
             with open('eventlog.txt', 'a') as file:
                 valstring = ''
                 for item in itemvalues:
                     valstring = valstring + str(item) + ','
                 string = 'From column: ' + str(colvalue) + ', the following anomalies: ' + valstring + ' have been unmarked as anomalies.' + '\n' + '\n'
                 file.write(string)
-               
+
             print('Not anomalies: deleting item(s) from anomalylist')
             theData.remove_anomaly_prediction(colvalue,itemvalues)
             returnList = []
@@ -310,11 +309,11 @@ def handleAnomalies(colData,notAnomalies,replaceAnomalies,coloptions,itemvalues,
     [Input('dropdown_anomaly_1','value'),
     Input('anomalyBookkeeper','data')],
 )
-def updateAnomaliesListOptions(anomalyCol,bookKeeper):
+def updateAnomaliesListOptions(colValue,bookKeeper):
     print('editing anomaly list')
-    if anomalyCol != '':
+    if colValue != '' and colValue in theData.anomalies:
         returnList = []
-        for item in theData.anomalies.get(anomalyCol):
+        for item in theData.anomalies.get(colValue):
             print(item)
             returnList.append({'label': item, 'value': item})
         return returnList
@@ -331,7 +330,7 @@ def updateAnomaliesListOptions(anomalyCol,bookKeeper):
 def refreshAnomaliesListValue(optionsChanged,clickedSelectAll,clickedNotAnomalies,options,value):
     ctx = dash.callback_context
     last_event = ctx.triggered[0]['prop_id'].split('.')[0]
-    
+
     if last_event == 'dropdown_anomaly_2' or last_event == 'anomaliesButtonNotAnomalies':
         return []
     if clickedSelectAll != None and last_event == 'anomaliesButtonSelectAll':
@@ -383,22 +382,8 @@ def show_visualization(click,visName,columns):
         return chosenVis
     return { #Empty graph
         'data': [],
-#        'layout': go.Layout(
         "layout": {
             "title": "My Dash Graph",
             "height": 700,  # px
-#            xaxis={
-#                'showticklabels': False,
-#                'ticks': '',
-#                'showgrid': False,
-#                'zeroline': False
-#            },
-#            yaxis={
-#                'showticklabels': False,
-#                'ticks': '',
-#                'showgrid': False,
-#                'zeroline': False
-#            }
-#        )
         }
     }

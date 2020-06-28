@@ -74,10 +74,6 @@ class SharedDataFrame:
                      'been annotated \n \n'
             file.write(string)
 
-        # TODO implement user interaction to change anomalies
-        # self.replace_anomalies()
-        # self.data = self.set_data_types()
-
     def set_data(self, df):
         """ Sets an pre-parsed DataFrame as the data of the SharedDataFrame """
         self.data = df
@@ -88,10 +84,6 @@ class SharedDataFrame:
             string = 'Column types of the data have been predicted using PType. Anomalies and Missing values have ' \
                      'been annotated \n \n'
             file.write(string)
-
-        # TODO implement user interaction to change anomalies
-        # self.replace_anomalies()
-        # self.data = self.set_data_types()
 
     def remove(self, indices):
         self.data = self.data.drop(indices)
@@ -150,6 +142,13 @@ class SharedDataFrame:
                       removeDuplicates):
         """ Main data cleaning function, use function defined below this one """
 
+        #Remove all remaining anomalies
+        print(self.anomalies)
+        for item in self.anomalies: #Every column
+            print(item) #Column name
+            remainingAnomalies = self.anomalies[item]
+            print(remainingAnomalies) #Anomalies for colu
+            self.replace_anomalies(item,remainingAnomalies)
         self.data = self.set_data_types()
 
         self.changeColumns(columnData)
@@ -218,7 +217,6 @@ class SharedDataFrame:
         return self.data
 
     def handleOutliers(self, handleNum):
-        
         #Slow method
         if handleNum == '1' or handleNum == '2':
             self.data = outlier_ensemble(self.data)
@@ -327,6 +325,11 @@ class SharedDataFrame:
                     print(self.anomalies[column_name])
                     print('deleted item ' + str(item))
                     break
+        for item in self.anomalies:
+            print(self.anomalies[item])
+            if self.anomalies[item] == []:
+                del self.anomalies[item]
+                break #Can only delete item from one column at the same time, so we can only find one
 
 
     def replace_anomalies(self, column_name, items):
