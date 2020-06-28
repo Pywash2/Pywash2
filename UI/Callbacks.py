@@ -5,10 +5,13 @@ from dash.dependencies import Input, Output, State
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_table
-
 from dash.exceptions import PreventUpdate
 
 from PyWash import SharedDataFrame
+
+import plotly.graph_objects as go
+
+from datetime import datetime
 
 #These contain the imported data as SharedDataFrame objects
 #originalData has the dataset as imported, previewData has the data shown when importing the dataset
@@ -16,6 +19,8 @@ theData = None
 originalData = None
 previewData = None
 
+anomaliesDelete = []
+anomaliesReplace = []
 #Put Data in Preview Table
 @app.callback(
     [Output('PreviewDataTable', 'columns'),
@@ -45,8 +50,7 @@ def create_conditional_style(columns): #Fix headers of dataframe columns not fit
     print(css)
     return css
 
-
-# Load Data
+### Load Data
 @app.callback(
     Output('dataUploaded', 'data'),
     [Input('upload-data', 'contents')],
@@ -163,7 +167,7 @@ def createColumnList(prevData,col2,col1,colData):
             columnTypeList.append(x)
         return columnTypeList
 
-# Main Callbacks
+### Main Callbacks
 @app.callback(
     [Output('Data_Upload', 'style'),
     Output('DataCleaning','style'),
@@ -175,7 +179,7 @@ def initiate_stages(click):
         return {'visibility': 'hidden'},{'display': 'none'},{'display': 'block'}
     return {'textAlign':'center','height': '100px','display':'block'},{'display': 'block'},{'display': 'none'}
 
-# Data Cleaning Callbacks
+### Data Cleaning Callbacks
 @app.callback(
     Output('dropdown_column_1', 'options'),
     [Input('columnStorage', 'data')],
@@ -209,13 +213,13 @@ def updateColumnChooseNames(colData,col1,col2):
 )
 def updateDColumnChooseValues(col1,colData):
     if colData != None:
-        print('updating Column 2')
-        i = 0
+        print('updating Column 2: ' + str(col1))
+        print(colData)
         for row in colData:
-            i = i + 1
-            if i == col1:
+            print(row)
+            if row[0] == col1:
                 return row[1]
-            return ''
+        return ''
 
 @app.callback(
     Output('dropdown_normalization', 'options'),
@@ -245,54 +249,148 @@ def updateStandardizationColumns(colData,norm):
         return returnList
     return [{'label': 'Import data to get started', 'value': '0'}]
 
-#Anomaly Callbacks
+### Anomaly Callbacks
 @app.callback(
-    Output('dropdown_anomaly_1', 'options'),
+    [Output('dropdown_anomaly_1', 'options'),
+    Output('anomalyBookkeeper','data')],
     [Input('columnStorage','data'),
-    Input('anomaliesbutton','n_clicks')],
+    Input('anomaliesButtonNotAnomalies','n_clicks'),
+    Input('anomaliesButtonYesAnomalies','n_clicks')],
     [State('dropdown_anomaly_1','options'),
-    State('dropdown_anomaly_1','value')],
+    State('dropdown_anomaly_2','value'),
+    State('dropdown_anomaly_1','value'),
+    State('anomalyBookkeeper','data')],
 )
-def input_anomaly_columnList(colData,click,options,value):
+def handleAnomalies(colData,notAnomalies,replaceAnomalies,coloptions,itemvalues,colvalue,bookKeeper):
     ctx = dash.callback_context
     last_event = ctx.triggered[0]['prop_id'].split('.')[0]
-    print('last event: ' + last_event)
-
-    if colData != None and last_event == 'columnStorage':
-        print('updating Anomaly Column List')
-        returnList = []
-        for key in theData.anomalies:
-            returnList.append({'label': key, 'value': key})
-        return returnList
-
-    elif click != None and last_event == 'anomaliesbutton':
-        print('deleting column from anomalylist')
-
-        with open('eventlog.txt', 'a') as file:
-            string = 'All predicted anomalies of column: ' + str(value) + ' have been unmarked as anomalies.' + '\n' + '\n'
-            file.write(string)
-
-        returnList = []
-        for item in options:
-            if item['value'] != value:
-                returnList.append(item)
-            else:
-                theData.remove_anomaly_prediction(value)
-        return returnList
-    print('skipping anomalylist')
-    return []
-
+    if colData != None:
+        if notAnomalies != None and last_event == 'anomaliesButtonNotAnomalies':
+          
+            with open('eventlog.txt', 'a') as file:
+                valstring = ''
+                for item in itemvalues:
+                    valstring = valstring + str(item) + ','
+                string = 'From column: ' + str(colvalue) + ', the following anomalies: ' + valstring + ', have been unmarked as anomalies.' + '\n' + '\n'
+                file.write(string)
+               
+            print('Not anomalies: deleting item(s) from anomalylist')
+            theData.remove_anomaly_prediction(colvalue,itemvalues)
+            returnList = []
+            for key in theData.anomalies:
+                returnList.append({'label': key, 'value': key})
+                bookKeeperUpdate = datetime.now()
+            return [returnList,bookKeeperUpdate]
+        if replaceAnomalies != None and last_event == 'anomaliesButtonYesAnomalies':
+            print('Anomalies: replacing item(s) with None')
+            theData.replace_anomalies(colvalue,itemvalues)
+            returnList = []
+            for key in theData.anomalies:
+                returnList.append({'label': key, 'value': key})
+            return [returnList,bookKeeper]
+        if last_event == 'columnStorage':
+            returnList = []
+            for key in theData.anomalies:
+                returnList.append({'label': key, 'value': key})
+            return [returnList,bookKeeper]
+    else:
+        print('skipping anomalylist')
+        return [[],bookKeeper]
 
 @app.callback(
-    Output('dropdown_anomaly_2', 'options'),
-    [Input('dropdown_anomaly_1','value')],
+    Output('dropdown_anomaly_2','options'),
+    [Input('dropdown_anomaly_1','value'),
+    Input('anomalyBookkeeper','data')],
 )
-def input_anomaly_anomalyList(anomalyCol):
+def updateAnomaliesListOptions(anomalyCol,bookKeeper):
     print('editing anomaly list')
     if anomalyCol != '':
         returnList = []
         for item in theData.anomalies.get(anomalyCol):
+            print(item)
             returnList.append({'label': item, 'value': item})
-
         return returnList
     return [{'label': 'Import data to get started', 'value': ''}]
+
+@app.callback(
+    Output('dropdown_anomaly_2','value'),
+    [Input('dropdown_anomaly_2','options'),
+    Input('anomaliesButtonSelectAll','n_clicks'),
+    Input('anomaliesButtonNotAnomalies','n_clicks')],
+    [State('dropdown_anomaly_2','options'),
+    State('dropdown_anomaly_2','value')],
+)
+def refreshAnomaliesListValue(optionsChanged,clickedSelectAll,clickedNotAnomalies,options,value):
+    ctx = dash.callback_context
+    last_event = ctx.triggered[0]['prop_id'].split('.')[0]
+    
+    if last_event == 'dropdown_anomaly_2' or last_event == 'anomaliesButtonNotAnomalies':
+        return []
+    if clickedSelectAll != None and last_event == 'anomaliesButtonSelectAll':
+        print('selecting all anomalies')
+        returnList = []
+        for item in options:
+            returnList.append(item['value'])
+        return returnList
+
+### Visualization callbacks
+#This one causes a "Cannot read property 'length' of null" error...
+@app.callback(
+    Output('visualization_dropdown','options'),
+    [Input('ResultDataTable', 'data')],
+)
+def input_visualization_columnLists(dataProcessed):
+#If style of visualization has been changed to visible, data has been processed, so lists can be populated
+    if theData is not None:
+        data = list(theData.data.columns.values)
+        returnList = []
+        for item in data:
+            print(item)
+            returnList.append({'label': item, 'value': item})
+        print('ready for visualizations')
+        return returnList
+    return [{'label':'Please wait...','value':'0'}]
+#    return [,]
+
+@app.callback(
+    Output('visualizationbutton','children'),
+    [Input('visualization_dropdown','value')],
+)
+def updatePossibleVisualizations(columns):
+    if columns != '':
+        foundVis = chooseVisualization(theData.data,columns)
+        return foundVis
+    return 'Select columns for visualization'
+
+@app.callback(
+    Output('visGraph','figure'),
+    [Input('visualizationbutton','n_clicks')],
+    [State('visualizationbutton','children'),
+    State('visualization_dropdown','value')],
+)
+def show_visualization(click,visName,columns):
+    print('creating visualization...')
+    if theData is not None:
+        chosenVis = createVisualization(theData.data[columns],visName)
+        return chosenVis
+    return { #Empty graph
+        'data': [],
+#        'layout': go.Layout(
+        "layout": {
+            "title": "My Dash Graph",
+            "height": 700,  # px
+#            xaxis={
+#                'showticklabels': False,
+#                'ticks': '',
+#                'showgrid': False,
+#                'zeroline': False
+#            },
+#            yaxis={
+#                'showticklabels': False,
+#                'ticks': '',
+#                'showgrid': False,
+#                'zeroline': False
+#            }
+#        )
+        }
+    }

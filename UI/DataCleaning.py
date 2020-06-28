@@ -14,6 +14,9 @@ def DataCleaningUI():
             dcc.Store(
                 id = 'columnStorage',
             ),
+            dcc.Store(
+                id = 'anomalyBookkeeper',
+            ),
             html.Div(
                 id = 'Cleaning_Layer_1',
                 children = [
@@ -76,19 +79,27 @@ def DataCleaningUI():
                                             options = [{'label': 'Import data to get started', 'value': ''}],
                                             value='',
                                         ),
-                                        style = {'width': '60%','display': 'inline-block','vertical-align': 'middle'}
+                                        style = {'width': '40%','display': 'inline-block','vertical-align': 'middle'}
                                     ),
                                     html.Div(
                                         dcc.Dropdown(
                                             id = 'dropdown_anomaly_2',
+                                            multi = True,
                                         ),
                                         style = {'width': '40%','display': 'inline-block','vertical-align': 'middle'}
                                     ),
+                                    html.Div(
+                                        html.Button('Select All', id='anomaliesButtonSelectAll'),
+                                        style = {'width': '20%','display': 'inline-block','vertical-align': 'middle'}
+                                    )
                                 ],
                             ),
                             html.Div(
-                                html.Button('Selected column does not contain anomalies', id='anomaliesbutton'),
-                            ),
+                                children = [
+                                    html.Button('Selected items are not anomalies', id='anomaliesButtonNotAnomalies'),
+                                    html.Button('Selected items are anomalies, handle them', id='anomaliesButtonYesAnomalies'),
+                                ],
+                            )
                         ],
                         style = {'width':'40%','display': 'inline-block','vertical-align': 'middle'}
                     ),
@@ -127,10 +138,6 @@ def DataCleaningUI():
                         id = 'Duplicated_Rows',
                         children = [
                             html.H5("Test for duplicated rows?"),
-#                            daq.BooleanSwitch(
-#                                id='Duplicated_Rows_Booleanswitch',
-#                                on=True
-#                            )
                             dcc.RadioItems(
                                 id = 'DuplicatedRows',
                                 options=[
@@ -174,9 +181,12 @@ def DataCleaningUI():
                                 dcc.Dropdown(
                                     id = 'dropdown_outliers',
                                     options=[
-                                        {'label': 'No', 'value': '0'},
-                                        {'label': 'Yes, mark in an extra column', 'value': '1'},
-                                        {'label': 'Yes, remove rows', 'value': '2'}],
+                                        {'label': 'Do not handle outliers', 'value': '0'},
+                                        {'label': 'Slow & Precise: Mark in an extra column', 'value': '1'},
+                                        {'label': 'Slow & Precise: Remove rows', 'value': '2'},
+                                        {'label': 'Quick & Sloppy: Mark in an extra column', 'value': '3'},
+                                        {'label': 'Quick & Sloppy: Remove rows', 'value': '4'},
+                                    ],
                                     multi=False,
                                     value='1'
                                 ),
