@@ -270,7 +270,7 @@ def handleAnomalies(colData,notAnomalies,replaceAnomalies,coloptions,itemvalues,
                 valstring = ''
                 for item in itemvalues:
                     valstring = valstring + str(item) + ','
-                string = 'From column: ' + str(colvalue) + ', the following anomalies: ' + valstring + ', have been unmarked as anomalies.' + '\n' + '\n'
+                string = 'From column: ' + str(colvalue) + ', the following anomalies: ' + valstring + ' have been unmarked as anomalies.' + '\n' + '\n'
                 file.write(string)
 
             print('Not anomalies: deleting item(s) from anomalylist')
@@ -282,6 +282,14 @@ def handleAnomalies(colData,notAnomalies,replaceAnomalies,coloptions,itemvalues,
             return [returnList,bookKeeperUpdate]
         if replaceAnomalies != None and last_event == 'anomaliesButtonYesAnomalies':
             print('Anomalies: replacing item(s) with None')
+
+            with open('eventlog.txt', 'a') as file:
+                valstring = ''
+                for item in itemvalues:
+                    valstring = valstring + str(item) + ','
+                string = 'From column: ' + str(colvalue) + ', the following anomalies: ' + valstring + ' have been set to missing value annotator' + '\n' + '\n'
+                file.write(string)
+
             theData.replace_anomalies(colvalue,itemvalues)
             returnList = []
             for key in theData.anomalies:
