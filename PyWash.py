@@ -1,10 +1,11 @@
 from methods.BandA.Normalization import normalize
 from methods.BandA.OutlierDetector import identify_outliers, estimate_contamination, outlier_ensemble
 from methods.BandB.ptype.Ptype import Ptype
-from methods.BandB.MissingValues import handle_missing
+#from methods.BandB.MissingValues import handle_missing
 from methods.BandC.ParserUtil import assign_parser
-# from src.BandC.Exports import *
-# from src.Exceptions import *
+from methods.BandC.Exports import export_csv, export_arff
+from methods.MissingValueMethod.missing_values import *
+
 from pandas.core.frame import DataFrame
 import pandas as pd
 
@@ -67,7 +68,7 @@ class SharedDataFrame:
     def _load_data(self):
         self.data = self.parser.parse()
         self.col_types, self.anomalies, self.missing_values = self.infer_data_types_ptype()
-
+        print(self.col_types)
         # Event Logger
         with open('eventlog.txt', 'a') as file:
             string = 'Column types of the data have been predicted using PType. Anomalies and Missing values have ' \
@@ -128,6 +129,9 @@ class SharedDataFrame:
         elif file_type == 'csv':
             return export_csv(self.data)
         elif file_type == 'arff':
+            print(self.name)
+            print(self.parser.attributes)
+            print(self.parser.description)
             return export_arff(self.name, self.data,
                                self.parser.attributes, self.parser.description)
 
@@ -150,6 +154,8 @@ class SharedDataFrame:
             self.replace_anomalies(item,self.anomalies[item])
         self.anomalies = {} #Empty anomalies, data is successfully edited afaik but some anomalies remain in list only when doing it in this step
         print('done with anomalies!')
+        print('column types:')
+        print(self.col_types)
         self.data = self.set_data_types()
 
         self.changeColumns(columnData)
@@ -160,11 +166,14 @@ class SharedDataFrame:
                 string = 'Duplicate rows have been removed' + '\n' + '\n'
                 file.write(string)
 
-        if handleMissing == '1':
+        if handleMissing != None:
+            ############################################## TODO: FIX THIS SHIT ##############################################
             # Currently errors sometimes, rip
             print('handling missing data')
+            print(handleMissing)
             # 'remove' translates to: Jury-rig it to just drop the rows with NAs
-            self.missing('remove', ['n/a', 'na', '--', '?'])  # <- these are detected NA-s, put in here :)
+            # OLD   self.missing('remove', ['n/a', 'na', '--', '?'])  # <- these are detected NA-s, put in here :)
+            self.missing(handleMissing)
             #TODO add event logger once jonas has integrated missing value imputation
 
         if int(handleOutlier) > 0:
@@ -265,9 +274,29 @@ class SharedDataFrame:
         return self.data
 
     # BandB functions #####
-    def missing(self, setting, na_values):
-        """ Fix the missing values of the dataset """
-        self.data = handle_missing(self.data, setting, na_values)
+#OLD:     def missing(self, setting, na_values):
+    def missing(self, specified_column):
+        ##OLD##
+        #""" Fix the missing values of the dataset """
+        #self.data = handle_missing(self.data, setting, na_values)
+
+        ##NEW##
+        #Code below from Jonas Niederle
+        classification = True  # Specify whether the dataset concerns a regression or classification target variable
+
+        target_column = self.data[specified_column]  # Extract the target_column, when implemented in the tool this must be done by the user (maybe in earlier steps already)
+        d = self.data
+        print(target_column)
+
+        dat_pr, y, dum_enc, le, cols, dat_excl, dtype_dict, imp_arr = prepr_dat(d, specified_column)
+
+        results, times, imputer_dict = test_estimators(dat_pr, y, dum_enc, classification=classification)
+
+        fig, best_imputer = vis_imp_scores(results, save_fig=False, dataset=d)
+
+        dat_imp = impute_dat(dat_pr, imputer_dict[best_imputer])
+
+        self.data = restore_dat(dat_imp, y, dum_enc, le, cols, dat_excl, target_column, dtype_dict)
 
     def infer_data_types_ptype(self):
         """ Infer datatypes using ptype and apply the datatypes to the dataset"""
@@ -304,6 +333,7 @@ class SharedDataFrame:
         return types_dct, anomalies, missing_vals
 
     def set_data_types(self):
+        print('try to set data types!')
         # try to change types of columns iteratively
         df = self.data
         for item in self.col_types.items():

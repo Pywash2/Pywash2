@@ -28,7 +28,7 @@ def DataCleaningUI():
                         id = 'Column_Type_Changing',
                         children = [
                             html.Div(
-                                html.H5("Check and/or change column types"),
+                                html.H5("Check or change column types"),
                                 style = {'width':'100%','display': 'inline-block','textAlign':'center','vertical-align': 'middle'}
                             ),
                             html.Div(
@@ -38,6 +38,7 @@ def DataCleaningUI():
                                             id = 'dropdown_column_1',
                                             options=[{'label': 'Import data to get started', 'value': '0'}],
                                             value="0",
+                                            placeholder='Select column to change data type',
                                         ),
                                         style = {'width':'60%','display': 'inline-block','vertical-align': 'middle'}
                                     ),
@@ -52,6 +53,7 @@ def DataCleaningUI():
                                                 {'label': 'Date/Time', 'value': 'datetime64[ns]'},
                                                 {'label': 'Categorical', 'value': 'category'},
                                             ],
+                                            placeholder='Select column first',
                                         ),
                                         style = {'width':'40%','display': 'inline-block','vertical-align': 'middle'}
                                     ),
@@ -72,12 +74,15 @@ def DataCleaningUI():
                                 style = {'width':'100%','display': 'inline-block','textAlign':'center','vertical-align': 'middle'}
                             ),
                             html.Div(
+                                html.H5("If there are no columns to select, there are no anomalies"),
+                                style = {'width':'100%','display': 'inline-block','textAlign':'center','vertical-align': 'middle'}
+                            ),
+                            html.Div(
                                 children = [
                                     html.Div(
                                         dcc.Dropdown(
                                             id = 'dropdown_anomaly_1',
-                                            options = [{'label': 'Import data to get started', 'value': ''}],
-                                            value='',
+                                            placeholder='Check which columns have anomalies',
                                         ),
                                         style = {'width': '40%','display': 'inline-block','vertical-align': 'middle'}
                                     ),
@@ -85,6 +90,7 @@ def DataCleaningUI():
                                         dcc.Dropdown(
                                             id = 'dropdown_anomaly_2',
                                             multi = True,
+                                            placeholder='Select items marked as anomalies',
                                         ),
                                         style = {'width': '40%','display': 'inline-block','vertical-align': 'middle'}
                                     ),
@@ -93,6 +99,7 @@ def DataCleaningUI():
                                         style = {'width': '20%','display': 'inline-block','vertical-align': 'middle'}
                                     )
                                 ],
+                                style = {'width': '100%','display': 'inline-block','vertical-align': 'middle'}
                             ),
                             html.Div(
                                 children = [
@@ -110,72 +117,19 @@ def DataCleaningUI():
                 ],
                 style = {'vertical-align': 'middle'}
             ),
-        #Cleaning Options Layer 2: Missing Values & Duplicated Rows
+        #Cleaning Options Layer 2: Outlier Handling, Duplicated Rows, Missing Values
             html.Div(
-                id = 'Cleaning2',
+                id = 'Cleaning_Layer_2',
                 children = [
                     html.Div(
                         html.H5("   "), #Creates a white space
-                        style = {'width': '40%','display': 'inline-block'}
+                        style = {'width': '5%','display': 'inline-block'}
                     ), #could also put below 2 in 1 div and do width 40%,textalign center on div to center all instead of manual
                     html.Div(
-                        id = 'Missing_Values_Box',
+                        id = 'outlier handling',
                         children = [
-                            html.H5("Test for missing values?"),
-                            dcc.RadioItems(
-                                id = 'missingValues',
-                                options=[
-                                    {'label': 'No', 'value': '0'},
-                                    {'label': 'Yes', 'value': '1'},
-                                ],
-                                value='1',
-                                labelStyle={'display': 'inline-block'}
-                            )
-                        ],
-                        style = {'width': '20%','display': 'inline-block','vertical-align': 'middle'}
-                    ),
-                    html.Div(
-                        id = 'Duplicated_Rows',
-                        children = [
-                            html.H5("Test for duplicated rows?"),
-                            dcc.RadioItems(
-                                id = 'DuplicatedRows',
-                                options=[
-                                    {'label': 'No', 'value': '0'},
-                                    {'label': 'Yes', 'value': '1'},
-                                ],
-                                value='1',
-                                labelStyle={'display': 'inline-block'}
-                            )
-                        ],
-                        style = {'width': '20%','display': 'inline-block','vertical-align': 'middle'}
-                    ),
-                ],
-                style = {'vertical-align': 'middle'}
-
-            ),
-            html.Div(
-                id = 'outlier handling',
-                children = [
-                    html.Div([
                             html.Div(
-                                html.H5("  "), #Creates a white space
-                                style = {'width': '10%','display': 'inline-block','vertical-align': 'middle'}
-                            ),
-                            html.Div(
-                                html.H5('Handle outliers?'),
-                                style = {'width': '80%','display': 'inline-block','vertical-align': 'middle'}
-                            ),
-                            html.Div(
-                                html.H5("  "), #Creates a white space
-                                style = {'width': '10%','display': 'inline-block','vertical-align': 'middle'}
-                            ),
-                        ]
-                    ),
-                    html.Div([
-                            html.Div(
-                                html.H5("  "), #Creates a white space
-                                style = {'width': '10%','display': 'inline-block','vertical-align': 'middle'}
+                                html.H5('Choose preferred method for handling outliers'),
                             ),
                             html.Div(
                                 dcc.Dropdown(
@@ -190,96 +144,128 @@ def DataCleaningUI():
                                     multi=False,
                                     value='1'
                                 ),
-                                style = {'width': '80%','display': 'inline-block','vertical-align': 'middle',}
+                            ),
+                        ],
+                        style = {'width': '35%','display': 'inline-block','vertical-align': 'middle'}
+                    ),
+                    html.Div(
+                        html.H5("   "), #Creates a white space
+                        style = {'width': '5%','display': 'inline-block'}
+                    ), #could also put below 2 in 1 div and do width 40%,textalign center on div to center all instead of manual
+                    html.Div(
+                        id = 'Missing_Values_Box',
+                        children = [
+                            html.Div(
+                                html.H5("Select column to clean missing values, only for regression or classification target variable"),
                             ),
                             html.Div(
-                                html.H5("  "), #Creates a white space
-                                style = {'width': '10%','display': 'inline-block','vertical-align': 'middle'}
+                                dcc.Dropdown(
+                                    id = 'dropdown_missingValues',
+                                    options=[],
+                                    style={'display': 'inline-block','width': '100%'},
+                                    placeholder='Select desired columns for missing value detection',
+                                )
+                            )
+                        ],
+                        style = {'width': '35%','display': 'inline-block','vertical-align': 'middle'}
+                    ),
+                    html.Div(
+                        html.H5("   "), #Creates a white space
+                        style = {'width': '5%','display': 'inline-block'}
+                    ),
+                    html.Div(
+                        id = 'Duplicated_Rows',
+                        children = [
+                            html.Div(
+                                html.H5("Test for duplicated rows?"),
                             ),
-                        ]
-                    )
-                ]
+                            html.Div(
+                                dcc.RadioItems(
+                                    id = 'DuplicatedRows',
+                                    options=[
+                                        {'label': 'No', 'value': '0'},
+                                        {'label': 'Yes', 'value': '1'},
+                                    ],
+                                    value='1',
+                                    labelStyle={'display': 'inline-block'}
+                                )
+                            )
+                        ],
+                        style = {'width': '10%','display': 'inline-block','vertical-align': 'middle'}
+                    ),
+                    html.Div(
+                        html.H5("   "), #Creates a white space
+                        style = {'width': '5%','display': 'inline-block'}
+                    ),
+                ],
+                style = {'vertical-align': 'middle'}
+
             ),
+            #Standardize & Normalize
             html.Div(
-                id = 'standardize/Normalize',
+                id = 'Cleaning_Layer_3',
                 children = [
-                    html.Div([
-                            html.Div(
-                                html.H5("  "), #Creates a white space
-                                style = {'width': '10%','display': 'inline-block','vertical-align': 'middle'}
-                            ),
+                    html.Div(
+                        html.H5("  "), #Creates a white space
+                        style = {'width': '5%','display': 'inline-block','vertical-align': 'middle'}
+                    ),
+                    #Normalize
+                    html.Div(
+                        id = 'normalization',
+                        children = [
                             html.Div(
                                 html.H5("Normalize column(s)?"),
                                 style = {'width': '80%','display': 'inline-block','vertical-align': 'middle',}
-                            ),
-                            html.Div(
-                                html.H5("  "), #Creates a white space
-                                style = {'width': '10%','display': 'inline-block','vertical-align': 'middle'}
-                            ),
-                        ]
-                    ),
-                    html.Div([
-                            html.Div(
-                                html.H5("  "), #Creates a white space
-                                style = {'width': '10%','display': 'inline-block','vertical-align': 'middle'}
                             ),
                             html.Div(
                                 dcc.Dropdown(
                                     id = 'dropdown_normalization',
                                     options=[{'label': 'Import data to get started', 'value': '0'}],
                                     multi=True,
+                                    placeholder='Select desired columns for normalization',
                                 ),
-                                style = {'width': '80%','display': 'inline-block','vertical-align': 'middle',}
                             ),
-                            html.Div(
-                                html.H5("  "), #Creates a white space
-                                style = {'width': '10%','display': 'inline-block','vertical-align': 'middle'}
-                            ),
-                        ]
+                        ],
+                        style = {'width':'40%','display': 'inline-block','vertical-align': 'middle'}
                     ),
-                    html.Div([
-                            html.Div(
-                                html.H5("  "), #Creates a white space
-                                style = {'width': '10%','display': 'inline-block','vertical-align': 'middle'}
-                            ),
+                    html.Div(
+                        html.H5("  "), #Creates a white space
+                        style = {'width': '10%','display': 'inline-block','vertical-align': 'middle'}
+                    ),
+                    #Standardize
+                    html.Div(
+                        id = 'standardization',
+                        children = [
                             html.Div(
                                 html.H5("Standardize column(s)?"),
                                 style = {'width': '80%','display': 'inline-block','vertical-align': 'middle',}
-                            ),
-                            html.Div(
-                                html.H5("  "), #Creates a white space
-                                style = {'width': '10%','display': 'inline-block','vertical-align': 'middle'}
-                            ),
-                        ]
-                    ),
-                    html.Div([
-                            html.Div(
-                                html.H5("  "), #Creates a white space
-                                style = {'width': '10%','display': 'inline-block','vertical-align': 'middle'}
                             ),
                             html.Div(
                                 dcc.Dropdown(
                                     id = 'dropdown_standardization',
                                     options=[{'label': 'Import data to get started', 'value': '0'}],
                                     multi=True,
+                                    placeholder='Select desired columns for standardization',
                                 ),
-                                style = {'width': '80%','display': 'inline-block','vertical-align': 'middle',}
-                            ),
-                            html.Div(
-                                html.H5("  "), #Creates a white space
-                                style = {'width': '10%','display': 'inline-block','vertical-align': 'middle'}
                             ),
                         ],
+                        style = {'width':'40%','display': 'inline-block','vertical-align': 'middle'}
+                    ),
+
+                    html.Div(
+                        html.H5("  "), #Creates a white space
+                        style = {'width': '5%','display': 'inline-block','vertical-align': 'middle'}
                     ),
                 ],
+                style = {'vertical-align': 'middle'}
             ),
-            html.Div( #empty space
-                style = {'height':'40px'},
+            html.Div( #empty space between options and start/preview
+                style = {'height':'50px'},
             ),
             html.Div(
-                id = 'temp_button',
+                id = 'start_button',
                 children = [
-                    html.Button('Start', id='button'),
+                    html.Button('Start Data Processing', id='startButton'),
                 ],
                 style = {'width': '100%','textAlign':'center','display': 'inline-block'}
             ),

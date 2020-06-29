@@ -115,11 +115,13 @@ def set_missing(col):
     # Set common missing value place holders of a column to a missing dtype
     place_holders = ['NA', 'na', 'nan', 'NAN', 'NaN', '?',
                      'None', 'NONE', 'none', np.nan]
-
-    # Ensure no trailing spaces to prevent place holders not being recognized
-    col = col.apply(lambda x: x.strip() if (type(x) == str) else x)
-
-    col[col.isin(place_holders)] = np.nan
+    if col.dtype != 'datetime64[ns]':
+        # Ensure no trailing spaces to prevent place holders not being recognized
+        col = col.apply(lambda x: x.strip() if (type(x) == str) else x)
+        pr = col.isin(place_holders)
+        pr = pr[pr == True]
+        print(pr)
+        col[col.isin(place_holders)] = np.nan
     return col
 
 
@@ -193,7 +195,9 @@ def set_cat_na(dat_cat, dum_enc):
 
 
 def drop_target_na(dat, target_column):
+    print(dat[target_column])
     bool_mask = dat[target_column].isna()
+    print(sum(bool_mask))
     if sum(bool_mask) > 0:
         print(str(sum(bool_mask)) + " rows contain missing values in the target column, these rows will be dropped.")
 
@@ -247,12 +251,9 @@ def vis_na(dat, save_fig=True, dataset=None):
         save_figure(ax, dataset)
 
 
-def prepr_dat(dat, target_column, dataset_path):
+def prepr_dat(dat, target_column):
     # Replace placeholders with np.nan
     dat = repl_with_na(dat)
-
-    # TIJDELIJK, NOG WEGHALEN!!
-    dat = transform_dtypes(dat, dataset_path[:-4] + ".json")
 
     # Drop columns containing only missing values
     dat = drop_na_column(dat)
@@ -581,8 +582,6 @@ def restore_dat(dat, y, dum_enc, lab_enc, cols, dat_excl, target_column, dtype_d
     df[target_column] = y
     df = df.astype(dtype_dict)
     return df
-
-
 # Visualize imputed data using a parallel coordinates plot
 
 def vis_encode_col(col):

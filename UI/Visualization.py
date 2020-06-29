@@ -42,9 +42,56 @@ def VisualizationUI():
                                 id = 'visGraph',
                                 style = {
                                     'height':500
-                                }
+                                },
+                                figure = { #Empty graph
+                                    'data': [],
+                                    "layout": {
+                                        "title": "My Dash Graph",
+                                        "height": 700,  # px
+                                    }
+                                },
                             )
                         ],
+                    ),
+                ]
+            ),
+            html.Div(
+                id = 'data_export',
+                children = [
+                    html.Div(
+                        html.H5("  "), #Creates a white space
+                        style = {'width': '45%','display': 'inline-block','vertical-align': 'middle'}
+                    ),
+                    html.Div(
+                        html.A(
+                            html.Button('Download cleaned dataset'),
+                            id='downloadButton',
+                            download = '',
+                            href='',
+                        ),
+                        style = {'width': '10%','display': 'inline-block','vertical-align': 'middle'}
+                    ),
+                    html.Div(
+                        html.H5("  "), #Creates a white space
+                        style = {'width': '1%','display': 'inline-block','vertical-align': 'middle'}
+                    ),
+                    html.Div(
+                        dcc.Dropdown(
+                            id='downloadType',
+                            options=[
+                                {'label': '.CSV', 'value': 'csv'},
+                                {'label': '.ARFF', 'value': 'arff'},
+                            ],
+                            value='csv',
+                            multi=False,
+                            placeholder='Select export file type',
+                        ),
+#                        style = {'width': '20%','display': 'inline-block'}
+                        style = {'width': '8%','display': 'inline-block','vertical-align': 'middle'}
+                    ),
+                    html.Div(
+                        html.H5("  "), #Creates a white space
+                        style = {'width': '36%','display': 'inline-block','vertical-align': 'middle'}
                     ),
                 ]
             ),

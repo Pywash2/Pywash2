@@ -1,9 +1,12 @@
 import pandas as pd
+import numpy as np
 
 from wordcloud import WordCloud
-from plotly import tools as tls
 import matplotlib.pyplot as plt
 
+from plotly import tools as tls
+
+import plotly.graph_objects as go
 import plotly.express as px
 
 def chooseVisualization(df,columns):
@@ -94,7 +97,7 @@ def CreateBarChart(data):
     print(data.head(5))
     data = data.iloc[:,0]
     #Create list of unique categories + amount, then create figure
-    uniqueGrouped = data.groupby(data).size().sort_values(ascending=False)
+    uniqueGrouped = data.value_counts().sort_values(ascending=False)
     fig = px.bar(uniqueGrouped, x=uniqueGrouped.index, y=uniqueGrouped.tolist())
     return fig
 
@@ -124,26 +127,52 @@ def createHistogram(data):
 
 def createStackedBarChart(data):
     #Mostly from the previous year
-    data.apply(pd.value_counts())
-    resultData = []
-    for i in range(data.shape[0]):
-        bar = go.Bar(
-            x = np.asArray(data.columns),
-            y = data.values[i],
-            name = str(data.index[i])
+#    data.apply(pd.value_counts())
+    #Transform data into grouped per column
+#    newDF = []
+#    for item in data.columns:
+#        groupedColumn = data[item].value_counts()
+#        print(groupedColumn)
+#        newDF.append(groupedColumn)
+#    newDF = pd.DataFrame(newDF)
+    print('trying value counts apply')
+    newDF = []
+    for item in data.columns:
+        column = data[item]
+        column = column.value_counts()
+        column = column.to_frame()
+        column.index = column.index.map(str)
+        newDF.append(column)
+        print(column)
+    totalDF = newDF[0]
+    for i in range(1,len(newDF)):
+        totalDF = pd.concat([totalDF,newDF[i]], axis=1)
+    print(totalDF)
+    #Turn list of series into DF
+#    df = data.apply(pd.value_counts)
+#    print(df)
+    fig = go.Figure()
+    for i in range(len(totalDF)):
+        fig.add_trace(
+            go.Bar(
+                x = totalDF.columns,
+                y = totalDF.values[i],
+                name= str(totalDF.index[i]) #NOT X LABEL, ITEM LABEL
+            )
         )
-        resultData.append(bar)
-    return {
-        'data':resultData,
-        'layout': go.Layout()
-        }
+    fig.update_layout(barmode='stack')
+    return fig
 
 def createScatterPlot(data):
-    fig = px.scatter(data)
+    fig = px.scatter(data, x = data.columns[0], y = data.columns[1])
     ###TODO: Make look nice
     return fig
 
 def createTwoDPlot(data):
-    fig = px.line(df)
-    ###TODO: Make look nice
-    return  fig
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x = data[data.columns[0]], y = data[data.columns[1]], mode='markers'))
+    fig.update_layout(
+        xaxis_title = data.columns[0],
+        yaxis_title = data.columns[1],
+    )
+    return fig

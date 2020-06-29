@@ -94,17 +94,22 @@ def createDataResult(change):
 #Change data based on selected actions
 @app.callback(
     Output('dataProcessed', 'data'),
-    [Input('button','n_clicks')],
+    [Input('startButton','n_clicks')],
     [State('columnStorage', 'data'),
-    State('missingValues', 'value'),
+    State('dropdown_missingValues', 'value'),
     State('dropdown_outliers', 'value'),
     State('dropdown_normalization', 'value'),
     State('dropdown_standardization', 'value'),
     State('DuplicatedRows','value')],
 )
 def processData(click, columnData, missingValues, handleOutliers, normalizationColumns, standardizationColumns, removeDuplicateRows):
-    if click != None:
+    if click != None and theData != None:
         print('Starting processing, this can take a while')
+        #Set column types (to be changed)
+        colTypes = {}
+        for item in columnData:
+            colTypes[item[0]] = item[1]
+        theData.col_types = colTypes
         print(columnData)
         theData.startCleaning(columnData, missingValues, handleOutliers, normalizationColumns, standardizationColumns, removeDuplicateRows)
         return 1
@@ -171,10 +176,10 @@ def createColumnList(prevData,col2,col1,colData):
     [Output('Data_Upload', 'style'),
     Output('DataCleaning','style'),
     Output('Visualization','style')],
-    [Input('button','n_clicks')]
+    [Input('startButton','n_clicks')]
 )
 def initiate_stages(click):
-    if click != None:
+    if click != None and theData != None:
         return {'visibility': 'hidden'},{'display': 'none'},{'display': 'block'}
     return {'textAlign':'center','height': '100px','display':'block'},{'display': 'block'},{'display': 'none'}
 
@@ -221,32 +226,21 @@ def updateDColumnChooseValues(col1,colData):
         return ''
 
 @app.callback(
+    [Output('dropdown_missingValues', 'options'),
     Output('dropdown_normalization', 'options'),
+    Output('dropdown_standardization', 'options')],
     [Input('columnStorage', 'data')],
     [State('dropdown_normalization', 'value')],
 )
-def updateNormalizationColumns(colData,norm):
+def updateOtherColumns(colData,norm):
     if colData != None:
         print('updating Normalization Column')
         returnList = []
         for row in colData:
             returnList.append({'label': row[0]+':'+row[1], 'value': row[0]})
-        return returnList
-    return [{'label': 'Import data to get started', 'value': '0'}]
-
-@app.callback(
-    Output('dropdown_standardization', 'options'),
-    [Input('columnStorage', 'data')],
-    [State('dropdown_standardization', 'value')],
-)
-def updateStandardizationColumns(colData,norm):
-    if colData != None:
-        print('updating Standardization Column')
-        returnList = []
-        for row in colData:
-            returnList.append({'label': row[0]+':'+row[1], 'value': row[0]})
-        return returnList
-    return [{'label': 'Import data to get started', 'value': '0'}]
+        return [returnList,returnList,returnList]
+    returnItem = [{'label': 'Import data to get started', 'value': '0'}]
+    return [returnItem,returnItem,returnItem]
 
 ### Anomaly Callbacks
 @app.callback(
@@ -264,7 +258,7 @@ def handleAnomalies(colData,notAnomalies,replaceAnomalies,coloptions,itemvalues,
     ctx = dash.callback_context
     last_event = ctx.triggered[0]['prop_id'].split('.')[0]
     if colData != None:
-        if notAnomalies != None and last_event == 'anomaliesButtonNotAnomalies':
+        if notAnomalies != None and last_event == 'anomaliesButtonNotAnomalies' and bookKeeper != None:
 
             with open('eventlog.txt', 'a') as file:
                 valstring = ''
@@ -280,7 +274,7 @@ def handleAnomalies(colData,notAnomalies,replaceAnomalies,coloptions,itemvalues,
                 returnList.append({'label': key, 'value': key})
                 bookKeeperUpdate = datetime.now()
             return [returnList,bookKeeperUpdate]
-        if replaceAnomalies != None and last_event == 'anomaliesButtonYesAnomalies':
+        if replaceAnomalies != None and last_event == 'anomaliesButtonYesAnomalies' and bookKeeper != None:
             print('Anomalies: replacing item(s) with None')
 
             with open('eventlog.txt', 'a') as file:
@@ -311,13 +305,13 @@ def handleAnomalies(colData,notAnomalies,replaceAnomalies,coloptions,itemvalues,
 )
 def updateAnomaliesListOptions(colValue,bookKeeper):
     print('editing anomaly list')
-    if colValue != '' and colValue in theData.anomalies:
+    if colValue != None:
         returnList = []
         for item in theData.anomalies.get(colValue):
             print(item)
             returnList.append({'label': item, 'value': item})
         return returnList
-    return [{'label': 'Import data to get started', 'value': ''}]
+    return []
 
 @app.callback(
     Output('dropdown_anomaly_2','value'),
@@ -387,3 +381,17 @@ def show_visualization(click,visName,columns):
             "height": 700,  # px
         }
     }
+
+### Output callbacks
+@app.callback(
+    [Output('downloadButton', 'href'),
+    Output('downloadButton', 'download')],
+    [Input('dataProcessed', 'data'),
+    Input('downloadType', 'value')],
+)
+def update_download_link(dataProcessed, downloadType):
+    if dataProcessed == 1:
+        fileString = 'cleaned' + theData.name + '.' + downloadType
+        print(fileString)
+        return[theData.export_string(downloadType),fileString]
+    return ['','']
