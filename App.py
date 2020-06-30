@@ -41,6 +41,4 @@ if __name__ == '__main__':
 
     # Run App
 
-    app.run_server(debug=True, use_reloader=False)
-
-
+    app.run_server(debug=False, use_reloader=True)

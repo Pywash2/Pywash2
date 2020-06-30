@@ -7,7 +7,7 @@ def VisualizationUI():
         id = 'Visualization',
         children = [
             html.H3(
-                children = "Here you can have a quick look at the data before exporting to your computer",
+                children = "Have a quick look at the data before downloading the cleaned dataset",
                 style = {'textAlign':'center'}
             ),
             html.Div(

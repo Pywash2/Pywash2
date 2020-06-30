@@ -86,7 +86,7 @@ def DataCleaningUI():
                                         dcc.Dropdown(
                                             id = 'dropdown_anomaly_2',
                                             multi = True,
-                                            placeholder='Select items marked as anomalies',
+                                            placeholder='Select possible anomalies',
                                         ),
                                         style = {'width': '30%','display': 'inline-block','vertical-align': 'middle'}
                                     ),
