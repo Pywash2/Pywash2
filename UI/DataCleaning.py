@@ -268,9 +268,15 @@ def DataCleaningUI():
             html.Div(
                 id = 'preview_data',
                 children = [
-                    html.H3("Data Preview"),
-                    dash_table.DataTable(
-                        id='PreviewDataTable',
+                    dcc.Loading(
+                        id = 'loadPreview',
+                        type="default",
+                        children = [
+                            html.H3("Data Preview"),
+                            dash_table.DataTable(
+                                id='PreviewDataTable',
+                            ),
+                        ],
                     ),
                 ],
             )

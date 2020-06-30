@@ -38,7 +38,19 @@ def MainLayout():
                 ],
                 style = {'textAlign':'center'}
             ),
+#            dcc.Loading(
+#                id = 'loadCleaning',
+#                type="default",
+#                children = [
             DataCleaningUI(),
-            VisualizationUI(),
+#                ],
+#            ),
+            dcc.Loading(
+                id = 'loadVisualize',
+                type="default",
+                children = [
+                    VisualizationUI(),
+                ],
+            ),
         ]
     )

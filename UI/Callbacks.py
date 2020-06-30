@@ -11,6 +11,7 @@ from PyWash import SharedDataFrame
 from UI.MakeVisualizations import *
 
 from datetime import datetime
+import time
 
 #These contain the imported data as SharedDataFrame objects
 #originalData has the dataset as imported, previewData has the data shown when importing the dataset
@@ -323,6 +324,9 @@ def refreshAnomaliesListValue(optionsChanged,clickedSelectAll,clickedNotAnomalie
         return returnList
 
 ### Visualization callbacks
+#@app.callback(
+#    Output('loadingSummary', 'children'),
+#)
 
 @app.callback(
     [Output('summaryTable', 'columns'),
