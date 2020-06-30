@@ -71,12 +71,11 @@ def create_conditional_style(columns,length): #Fix headers of dataframe columns 
     Output('dataUploaded', 'data'),
     [Input('upload-data', 'contents')],
     [State('upload-data', 'filename'),
-    State('upload-data', 'last_modified')]
+    State('upload-data', 'last_modified')],
 )
 def store_data(data_contents, data_name, data_date):
     if data_contents == None:
         # prevent the None callbacks is important with the store component.
-        # you don't want to update the store for nothing.
         raise PreventUpdate
     print("loading datasets: " + str(data_name))
     dataSet = SharedDataFrame(file_path=data_name, contents=data_contents, verbose=False)
@@ -101,7 +100,7 @@ def createDataResult(change):
         df = theData.data
         if df is not None:
             return ([
-                {"name": i, "id": i, "deletable": True} for i in df.columns
+                {"name": i, "id": i} for i in df.columns
             ],
             create_conditional_style(df.columns,6),
             df.to_dict('records')
