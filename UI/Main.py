@@ -45,12 +45,6 @@ def MainLayout():
             DataCleaningUI(),
 #                ],
 #            ),
-            dcc.Loading(
-                id = 'loadVisualize',
-                type="default",
-                children = [
-                    VisualizationUI(),
-                ],
-            ),
+            VisualizationUI(),
         ]
     )

@@ -62,8 +62,14 @@ def VisualizationUI():
                 style = {'width':'100%','display': 'inline-block','textAlign':'center','vertical-align': 'middle'}
             ),
             html.Div(
-                dash_table.DataTable(
-                    id='summaryTable',
+                dcc.Loading(
+                    id = 'loadSummary',
+                    type="default",
+                    children = [
+                        dash_table.DataTable(
+                            id='summaryTable',
+                        ),
+                    ],
                 ),
                 style = {'width': '70%','display': 'block','vertical-align': 'middle', 'margin-left': 'auto', 'margin-right': 'auto'}
             ),
