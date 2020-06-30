@@ -1,10 +1,9 @@
 from methods.BandA.Normalization import normalize
 from methods.BandA.OutlierDetector import identify_outliers, estimate_contamination, outlier_ensemble
 from methods.BandB.ptype.Ptype import Ptype
-#from methods.BandB.MissingValues import handle_missing
+from methods.BandB.missing_values import *
 from methods.BandC.ParserUtil import assign_parser
 from methods.BandC.Exports import export_csv, export_arff
-from methods.MissingValueMethod.missing_values import *
 
 from pandas.core.frame import DataFrame
 import pandas as pd
@@ -167,12 +166,9 @@ class SharedDataFrame:
                 file.write(string)
 
         if handleMissing != None:
-            ############################################## TODO: FIX THIS SHIT ##############################################
             # Currently errors sometimes, rip
             print('handling missing data')
             print(handleMissing)
-            # 'remove' translates to: Jury-rig it to just drop the rows with NAs
-            # OLD   self.missing('remove', ['n/a', 'na', '--', '?'])  # <- these are detected NA-s, put in here :)
             self.missing(handleMissing)
             #TODO add event logger once jonas has integrated missing value imputation
 
@@ -243,7 +239,7 @@ class SharedDataFrame:
         #Fast method
         if handleNum == '3' or handleNum == '4':
             contamination = estimate_contamination(self.data)
-            setting = [0,7,9]
+            setting = [0,3,6]
             self.data = self.outlier(setting,contamination)
 
             if handleNum == '3':

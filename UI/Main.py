@@ -14,14 +14,14 @@ def MainLayout():
             html.Div(
                 id = 'titlePanel',
                 children = [
-                    html.H2(
+                    html.H1(
                         children = "Pywash browser interface",
                         style = {'textAlign':'center'}
                     ),
                 ]
             ),
             html.Div( #empty space
-                style = {'height':'25px'},
+                style = {'height':'100px'},
             ),
             #Load Data Section
             html.Div(
@@ -34,6 +34,13 @@ def MainLayout():
                         ],
                         multiple = False,
                         style = {'textAlign':'center','display': 'inline-block','border':'3px dashed black','padding':'5px','font-weight':'bold'}
+                    ),
+                    html.Div( #empty space
+                        style = {'height':'100px'},
+                    ),
+                    html.H3(
+                        children = "Keep in mind that processing can take a while depending on the imported dataset",
+                        style = {'textAlign':'center'}
                     ),
                 ],
                 style = {'textAlign':'center'}

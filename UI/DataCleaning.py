@@ -38,9 +38,9 @@ def DataCleaningUI():
                                             id = 'dropdown_column_1',
                                             options=[{'label': 'Import data to get started', 'value': '0'}],
                                             value="0",
-                                            placeholder='Select column to change data type',
+                                            placeholder='Select to check or change column data type',
                                         ),
-                                        style = {'width':'60%','display': 'inline-block','vertical-align': 'middle'}
+                                        style = {'width':'70%','display': 'inline-block','vertical-align': 'middle'}
                                     ),
                                     html.Div(
                                         dcc.Dropdown(
@@ -53,9 +53,9 @@ def DataCleaningUI():
                                                 {'label': 'Date/Time', 'value': 'datetime64[ns]'},
                                                 {'label': 'Categorical', 'value': 'category'},
                                             ],
-                                            placeholder='Select column first',
+                                            placeholder=' ',
                                         ),
-                                        style = {'width':'40%','display': 'inline-block','vertical-align': 'middle'}
+                                        style = {'width':'30%','display': 'inline-block','vertical-align': 'middle'}
                                     ),
                                 ],
                             ),
@@ -80,7 +80,7 @@ def DataCleaningUI():
                                             id = 'dropdown_anomaly_1',
                                             placeholder='Check which columns have anomalies',
                                         ),
-                                        style = {'width': '40%','display': 'inline-block','vertical-align': 'middle'}
+                                        style = {'width': '50%','display': 'inline-block','vertical-align': 'middle'}
                                     ),
                                     html.Div(
                                         dcc.Dropdown(
@@ -88,7 +88,7 @@ def DataCleaningUI():
                                             multi = True,
                                             placeholder='Select items marked as anomalies',
                                         ),
-                                        style = {'width': '40%','display': 'inline-block','vertical-align': 'middle'}
+                                        style = {'width': '30%','display': 'inline-block','vertical-align': 'middle'}
                                     ),
                                     html.Div(
                                         html.Button('Select All', id='anomaliesButtonSelectAll'),
@@ -112,6 +112,9 @@ def DataCleaningUI():
                     ),
                 ],
                 style = {'vertical-align': 'middle'}
+            ),
+            html.Div( #empty space
+                style = {'height':'50px'},
             ),
         #Cleaning Options Layer 2: Outlier Handling, Duplicated Rows, Missing Values
             html.Div(
@@ -196,6 +199,9 @@ def DataCleaningUI():
                 ],
                 style = {'vertical-align': 'middle'}
 
+            ),
+            html.Div( #empty space
+                style = {'height':'50px'},
             ),
             #Standardize & Normalize
             html.Div(

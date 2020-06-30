@@ -21,6 +21,22 @@ previewData = None
 
 anomaliesDelete = []
 anomaliesReplace = []
+
+def translateDTypes(type):
+    if type == 'int64':
+        translation = 'Integer'
+    if type == 'float64':
+        translation = 'Float'
+    if type == 'object':
+        translation = 'String'
+    if type == 'bool':
+        translation = 'Boolean'
+    if type == 'datetime64[ns]':
+        translation = 'Date/Time'
+    if type == 'category':
+        translation = 'Categorical'
+    return translation
+
 #Put Data in Preview Table
 @app.callback(
     [Output('PreviewDataTable', 'columns'),
@@ -195,9 +211,10 @@ def updateColumnChooseNames(colData,col1,col2):
         returnList = []
         for row in colData:
             print(row)
-            returnList.append({'label': row[0]+':'+row[1], 'value': row[0]})
+            returnList.append({'label': row[0] + '   (' + translateDTypes(row[1]) + ')', 'value': row[0]})
         return returnList
     return [{'label': 'Import data to get started', 'value': '0'}]
+
 
 @app.callback(
     Output('dropdown_column_2', 'value'),
@@ -226,7 +243,7 @@ def updateOtherColumns(colData,norm):
         print('updating Normalization Column')
         returnList = []
         for row in colData:
-            returnList.append({'label': row[0]+':'+row[1], 'value': row[0]})
+            returnList.append({'label': row[0]+'   ('+translateDTypes(row[1])+')', 'value': row[0]})
         return [returnList,returnList,returnList]
     returnItem = [{'label': 'Import data to get started', 'value': '0'}]
     return [returnItem,returnItem,returnItem]
@@ -422,9 +439,19 @@ def update_download_link(dataProcessed, downloadType):
     [Output('Data_Upload', 'style'),
     Output('DataCleaning','style'),
     Output('Visualization','style')],
-    [Input('startButton','n_clicks')]
+    [Input('startButton','n_clicks'),
+    Input('PreviewDataTable', 'data')],
+
+#    Input('upload-data', 'contents')],
+
 )
-def initiate_stages(click):
-    if click != None and theData != None:
-        return {'visibility': 'hidden'},{'display': 'none'},{'display': 'block'}
-    return {'textAlign':'center','height': '100px','display':'block'},{'display': 'block'},{'display': 'none'}
+def initiate_stages(click2,previewData):
+    if click2 != None:
+        #Display data visualization
+        return {'display': 'none'},{'display': 'none'},{'display': 'block'}
+    if previewData != None:
+        #Display data cleaning
+        return {'display': 'none'},{'display': 'block'},{'display': 'none'}
+
+    #Default: Display data importing
+    return {'textAlign':'center','height': '100px','display':'block'},{'display': 'none'},{'display': 'none'}
