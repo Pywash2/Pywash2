@@ -81,7 +81,7 @@ def store_data(data_contents, data_name, data_date):
 )
 def createDataResult(change):
     if theData is not None:
-        df = theData.get_dataframe()
+        df = theData.data
         if df is not None:
             return ([
                 {"name": i, "id": i, "deletable": True} for i in df.columns
@@ -170,18 +170,6 @@ def createColumnList(prevData,col2,col1,colData):
             print(x)
             columnTypeList.append(x)
         return columnTypeList
-
-### Main Callbacks
-@app.callback(
-    [Output('Data_Upload', 'style'),
-    Output('DataCleaning','style'),
-    Output('Visualization','style')],
-    [Input('startButton','n_clicks')]
-)
-def initiate_stages(click):
-    if click != None and theData != None:
-        return {'visibility': 'hidden'},{'display': 'none'},{'display': 'block'}
-    return {'textAlign':'center','height': '100px','display':'block'},{'display': 'block'},{'display': 'none'}
 
 ### Data Cleaning Callbacks
 @app.callback(
@@ -335,7 +323,36 @@ def refreshAnomaliesListValue(optionsChanged,clickedSelectAll,clickedNotAnomalie
         return returnList
 
 ### Visualization callbacks
-#This one causes a "Cannot read property 'length' of null" error...
+
+@app.callback(
+    [Output('summaryTable', 'columns'),
+    Output('summaryTable', 'style_cell_conditional'),
+    Output('summaryTable', 'data')],
+    [Input('dataProcessed','data')]
+)
+def give_summary(dataProcessed):
+    if theData is not None:
+        #Create summary
+        dfList = []
+        for item in theData.data.columns:
+            df = pd.DataFrame({item: theData.data[item].describe()})
+            dfList.append(df)
+        totalDf = dfList[0]
+        print(totalDf)
+        if len(dfList) > 0:
+            for i in range(1,len(dfList)):
+                totalDf = pd.concat([totalDf, dfList[i]], axis=1)
+                print(totalDf)
+        totalDf = totalDf.reset_index()
+        totalDf.rename(columns={'index':' '}, inplace=True)
+        #Return summary to Dash
+        return (
+            [{"name": i, "id": i} for i in totalDf.columns],
+            create_conditional_style(totalDf.columns),
+            totalDf.to_dict('records')
+        )
+    return ([{"id": " ","name": " "}],[{}],[{}])
+
 @app.callback(
     Output('visualization_dropdown','options'),
     [Input('ResultDataTable', 'data')],
@@ -361,7 +378,7 @@ def updatePossibleVisualizations(columns):
     if columns != '':
         foundVis = chooseVisualization(theData.data,columns)
         return foundVis
-    return 'Select columns for visualization'
+    return 'Select column(s) for visualization'
 
 @app.callback(
     Output('visGraph','figure'),
@@ -377,7 +394,7 @@ def show_visualization(click,visName,columns):
     return { #Empty graph
         'data': [],
         "layout": {
-            "title": "My Dash Graph",
+            "title": "",
             "height": 700,  # px
         }
     }
@@ -395,3 +412,15 @@ def update_download_link(dataProcessed, downloadType):
         print(fileString)
         return[theData.export_string(downloadType),fileString]
     return ['','']
+
+### Main Callbacks
+@app.callback(
+    [Output('Data_Upload', 'style'),
+    Output('DataCleaning','style'),
+    Output('Visualization','style')],
+    [Input('startButton','n_clicks')]
+)
+def initiate_stages(click):
+    if click != None and theData != None:
+        return {'visibility': 'hidden'},{'display': 'none'},{'display': 'block'}
+    return {'textAlign':'center','height': '100px','display':'block'},{'display': 'block'},{'display': 'none'}

@@ -15,7 +15,7 @@ def MainLayout():
                 id = 'titlePanel',
                 children = [
                     html.H2(
-                        children = "Welcome to the Pywash browser interface",
+                        children = "Pywash browser interface",
                         style = {'textAlign':'center'}
                     ),
                 ]

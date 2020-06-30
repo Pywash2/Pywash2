@@ -74,10 +74,6 @@ def DataCleaningUI():
                                 style = {'width':'100%','display': 'inline-block','textAlign':'center','vertical-align': 'middle'}
                             ),
                             html.Div(
-                                html.H5("If there are no columns to select, there are no anomalies"),
-                                style = {'width':'100%','display': 'inline-block','textAlign':'center','vertical-align': 'middle'}
-                            ),
-                            html.Div(
                                 children = [
                                     html.Div(
                                         dcc.Dropdown(

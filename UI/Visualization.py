@@ -7,53 +7,12 @@ def VisualizationUI():
         id = 'Visualization',
         children = [
             html.H3(
-                children = "Now, let's have a closer look!",
+                children = "Here you can have a quick look at the data before exporting to your computer",
                 style = {'textAlign':'center'}
             ),
             html.H5(
                 children = "(Processing can take a while, it is done when the preview data loads at the bottom of the page)",
                 style = {'textAlign':'center'}
-            ),
-            html.Div(
-                id = 'Visualizing',
-                children = [
-                    html.Div(
-                        id = 'visualization_selector',
-                        children = [
-                            html.H6("Select the primary column for visualization"),
-                            dcc.Dropdown(
-                                id = 'visualization_dropdown',
-                                options = [],
-                                value = '',
-                                multi=True,
-                            ),
-                            html.Div(
-                                [
-                                    html.Button('Create visualization', id='visualizationbutton'),
-                                    html.Button('Create data summary', id='summarybutton'),
-                                ],
-                            ),
-                        ],
-                    ),
-                    html.Div(
-                        id = 'visualizationLocation',
-                        children = [
-                            dcc.Graph(
-                                id = 'visGraph',
-                                style = {
-                                    'height':500
-                                },
-                                figure = { #Empty graph
-                                    'data': [],
-                                    "layout": {
-                                        "title": "My Dash Graph",
-                                        "height": 700,  # px
-                                    }
-                                },
-                            )
-                        ],
-                    ),
-                ]
             ),
             html.Div(
                 id = 'data_export',
@@ -64,7 +23,10 @@ def VisualizationUI():
                     ),
                     html.Div(
                         html.A(
-                            html.Button('Download cleaned dataset'),
+                            html.Button(
+                                'Download cleaned dataset',
+                                style = {'font-weight':'bold'},
+                            ),
                             id='downloadButton',
                             download = '',
                             href='',
@@ -96,6 +58,56 @@ def VisualizationUI():
                 ]
             ),
             html.Div(
+                html.H4("Dataset Summary"),
+                style = {'width':'100%','display': 'inline-block','textAlign':'center','vertical-align': 'middle'}
+            ),
+            html.Div(
+                dash_table.DataTable(
+                    id='summaryTable',
+                ),
+                style = {'width': '70%','display': 'block','vertical-align': 'middle', 'margin-left': 'auto', 'margin-right': 'auto'}
+            ),
+            html.Div(
+                id = 'Visualizing',
+                children = [
+                    html.Div(
+                        id = 'visualization_selector',
+                        children = [
+                            html.H6("Select the primary column for visualization"),
+                            dcc.Dropdown(
+                                id = 'visualization_dropdown',
+                                options = [],
+                                value = '',
+                                multi=True,
+                                placeholder='Select column(s) for visualization',
+                            ),
+                            html.Div(
+                                html.Button('Create visualization', id='visualizationbutton'),
+                            ),
+                        ],
+                    ),
+                    html.Div(
+                        id = 'visualizationLocation',
+                        children = [
+                            dcc.Graph(
+                                id = 'visGraph',
+                                style = {
+                                    'height':700
+                                },
+                                figure = { #Empty graph
+                                    'data': [],
+                                    'layout': {
+                                        'title_text': '',
+                                        'height': 700,  # px
+                                    }
+                                },
+                            )
+                        ],
+                        style = {'width': '90%','display': 'block','vertical-align': 'middle', 'margin-left': 'auto', 'margin-right': 'auto'}
+                    ),
+                ]
+            ),
+            html.Div(
                 id = 'result_data',
                 children = [
                     html.Div(
@@ -103,6 +115,14 @@ def VisualizationUI():
                             html.H5("Data Preview"),
                             dash_table.DataTable(
                                 id='ResultDataTable',
+                                sort_action='native',
+                                sort_mode='multi',
+                                style_data_conditional=[
+                                    {
+                                        'if': {'row_index': 'odd'},
+                                        'backgroundColor': 'rgb(248, 248, 248)'
+                                    }
+                                ],
                             ),
                         ],
                     ),

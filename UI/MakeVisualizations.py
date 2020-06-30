@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import random
 
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
@@ -33,11 +34,6 @@ def chooseVisualization(df,columns):
             #Plot: Bar Chart
             print('1-column, categorical')
             foundVis = '1-column Bar Chart'
-# Wordcloud currently disabled, because i tried, and it didn't work
-#        elif colType[0] == 'text':
-#            #Plot: Word Cloud
-#            print('1-column, text')
-#            foundVis = 'Word Cloud'
         elif colType[0] == 'numeric' or colType[0] == 'date/time':
             #Plot: Histogram
             print('1-column, numerical')
@@ -53,11 +49,12 @@ def chooseVisualization(df,columns):
         if any(x == 'category' for x in colType) and any(x == 'numeric' for x in colType):
             #Plot: Scatterplot
             print('2-column, categorical/numerical')
-            foundVis = 'Scatterplot'
+            foundVis = 'Categorical Scatterplot'
         if all(x == 'numeric' for x in colType):
             #Plot: 'Normal' 2D Plot
             print('2-column, numerical/numerical')
-            foundVis = '2D line plot'
+            foundVis = 'Numerical Scatterplot'
+
     if foundVis == None:
         print('Error: could not find appropriate ' + str(colAmount) + '-column visualization')
         return 'No possible plot could be found'
@@ -76,9 +73,6 @@ def typeDetector(col):
         print('Error! Actual type: ' + colType)
         return 'Error: Type Not Found'
 
-def dateTimeTransformer(col):
-    return None
-
 def createVisualization(data,chosenVis):
     print("Trying to make visualization: '"+chosenVis+"'")
     if chosenVis == '1-column Bar Chart':
@@ -87,9 +81,9 @@ def createVisualization(data,chosenVis):
         return createHistogram(data)
     if chosenVis == 'Multi-column Stacked Bar Chart':
         return createStackedBarChart(data)
-    if chosenVis == 'Scatterplot':
+    if chosenVis == 'Categorical Scatterplot':
         return createScatterPlot(data)
-    if chosenVis == '2D line plot':
+    if chosenVis == 'Numerical Scatterplot':
         return createTwoDPlot(data)
 
 def CreateBarChart(data):
@@ -101,24 +95,6 @@ def CreateBarChart(data):
     fig = px.bar(uniqueGrouped, x=uniqueGrouped.index, y=uniqueGrouped.tolist())
     return fig
 
-def createWordCloud(data):
-    #Separate the data into words
-    wordList = []
-    for item in data:
-        itemList = str(item).split()
-        #Separate words
-        for word in itemList:
-#            realWord = re.sub("[^a-zA-Z]","",str(word))
-#            if isinstance(word,str):
-            wordList.append(str(word))
-    giantString = " ".join(wordList)
-    wordcloud = WordCloud().generate(giantString)
-    fig = plt.figure()
-    plt.imshow(wordcloud, interpolation='bilinear')
-    plt.axis("off")
-    plot = tls.mpl_to_plotly(fig) #Plotly.tools function
-    return plot
-
 def createHistogram(data):
     #Distribution Plot
     ###TODO: Implement nbins
@@ -126,15 +102,7 @@ def createHistogram(data):
     return fig
 
 def createStackedBarChart(data):
-    #Mostly from the previous year
-#    data.apply(pd.value_counts())
-    #Transform data into grouped per column
-#    newDF = []
-#    for item in data.columns:
-#        groupedColumn = data[item].value_counts()
-#        print(groupedColumn)
-#        newDF.append(groupedColumn)
-#    newDF = pd.DataFrame(newDF)
+    #Partly from the previous year
     print('trying value counts apply')
     newDF = []
     for item in data.columns:
@@ -160,19 +128,61 @@ def createStackedBarChart(data):
                 name= str(totalDF.index[i]) #NOT X LABEL, ITEM LABEL
             )
         )
-    fig.update_layout(barmode='stack')
+    fig.update_layout(
+        barmode='stack',
+    )
     return fig
 
 def createScatterPlot(data):
-    fig = px.scatter(data, x = data.columns[0], y = data.columns[1])
-    ###TODO: Make look nice
+    #Because it has categorical data, add jitter to get extra info
+    print(data)
+    col0T = typeDetector(data[data.columns[0]])
+    if col0T == 'category':
+        xCat = data.columns[0]
+        x = data[data.columns[0]]
+        yCat = data.columns[1]
+        y = data[data.columns[1]]
+    else:
+        xCat = data.columns[1]
+        x = data[data.columns[1]]
+        yCat = data.columns[0]
+        y = data[data.columns[0]]
+    d = []
+    for i in range(len(pd.unique(data[xCat]))):
+        print(pd.unique(data[xCat])[i])
+        col = {
+            'name': str(pd.unique(data[xCat])[i]),
+            'type': 'violin',
+            'x': data[xCat][data[xCat] == pd.unique(data[xCat])[i]],
+            'y': data[yCat][data[xCat] == pd.unique(data[xCat])[i]],
+            'points': 'all',
+            'jitter': 1.0,
+            'pointpos': 0,
+            'line': {
+                'width': 0
+            },
+            'fillcolor': 'rgba(0,0,0,0)',
+        }
+        d.append(col)
+
+    fig = go.Figure(
+        {
+            'data': d,
+            'layout': {
+                'title': '',
+            }
+        }
+    )
+#    fig.add_trace(go.Scatter(x = x, y = y, mode='markers'))
+#    fig = px.scatter(data, x = x, y = y)
     return fig
 
 def createTwoDPlot(data):
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x = data[data.columns[0]], y = data[data.columns[1]], mode='markers'))
-    fig.update_layout(
-        xaxis_title = data.columns[0],
-        yaxis_title = data.columns[1],
-    )
+    fig = px.scatter(data, x = data[data.columns[0]], y = data[data.columns[1]])
+#    fig = go.Figure()
+#    fig.add_trace(go.Scatter(x = data[data.columns[0]], y = data[data.columns[1]], mode='markers'))
+#    fig.update_layout(
+#        xaxis_title = data.columns[0],
+#        yaxis_title = data.columns[1],
+#    )
     return fig
