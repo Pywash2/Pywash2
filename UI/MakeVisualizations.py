@@ -16,7 +16,7 @@ def chooseVisualization(df,columns):
     colAmount = len(columns)
     #First, set actual columns used and their types
     if colAmount == 0:
-        return 'Select columns for visualization'
+        return None
 
     else: #Try to visualize
         cols = []
@@ -88,7 +88,6 @@ def createVisualization(data,chosenVis):
 
 def CreateBarChart(data):
     print('creating 1-column Bar Chart')
-    print(data.head(5))
     data = data.iloc[:,0]
     #Create list of unique categories + amount, then create figure
     uniqueGrouped = data.value_counts().sort_values(ascending=False)
@@ -111,14 +110,10 @@ def createStackedBarChart(data):
         column = column.to_frame()
         column.index = column.index.map(str)
         newDF.append(column)
-        print(column)
     totalDF = newDF[0]
     for i in range(1,len(newDF)):
         totalDF = pd.concat([totalDF,newDF[i]], axis=1)
-    print(totalDF)
     #Turn list of series into DF
-#    df = data.apply(pd.value_counts)
-#    print(df)
     fig = go.Figure()
     for i in range(len(totalDF)):
         fig.add_trace(
@@ -135,7 +130,6 @@ def createStackedBarChart(data):
 
 def createScatterPlot(data):
     #Because it has categorical data, add jitter to get extra info
-    print(data)
     col0T = typeDetector(data[data.columns[0]])
     if col0T == 'category':
         xCat = data.columns[0]
@@ -149,7 +143,6 @@ def createScatterPlot(data):
         y = data[data.columns[0]]
     d = []
     for i in range(len(pd.unique(data[xCat]))):
-        print(pd.unique(data[xCat])[i])
         col = {
             'name': str(pd.unique(data[xCat])[i]),
             'type': 'violin',
@@ -173,16 +166,8 @@ def createScatterPlot(data):
             }
         }
     )
-#    fig.add_trace(go.Scatter(x = x, y = y, mode='markers'))
-#    fig = px.scatter(data, x = x, y = y)
     return fig
 
 def createTwoDPlot(data):
     fig = px.scatter(data, x = data[data.columns[0]], y = data[data.columns[1]])
-#    fig = go.Figure()
-#    fig.add_trace(go.Scatter(x = data[data.columns[0]], y = data[data.columns[1]], mode='markers'))
-#    fig.update_layout(
-#        xaxis_title = data.columns[0],
-#        yaxis_title = data.columns[1],
-#    )
     return fig

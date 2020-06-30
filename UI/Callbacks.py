@@ -52,15 +52,15 @@ def createDataPreview(change):
         return([
             {"name": i, "id": i, "deletable": True, "renamable": True,} for i in df.columns
         ],
-        create_conditional_style(df.columns),
+        create_conditional_style(df.columns,6),
         df.to_dict('records')
         )
 
-def create_conditional_style(columns): #Fix headers of dataframe columns not fitting, taken from https://github.com/plotly/dash-table/issues/432\
+def create_conditional_style(columns,length): #Fix headers of dataframe columns not fitting, taken from https://github.com/plotly/dash-table/issues/432\
     css=[]
     for col in columns:
         name_length = len(col)
-        pixel = 50 + round(name_length*7)
+        pixel = 50 + round(name_length*length)
         pixel = str(pixel) + "px"
         css.append({'if': {'column_id': col}, 'minWidth': pixel})
     print(css)
@@ -103,7 +103,7 @@ def createDataResult(change):
             return ([
                 {"name": i, "id": i, "deletable": True} for i in df.columns
             ],
-            create_conditional_style(df.columns),
+            create_conditional_style(df.columns,6),
             df.to_dict('records')
             )
     return ([{"id": " ","name": " "}],[{}],[{}])
@@ -341,9 +341,18 @@ def refreshAnomaliesListValue(optionsChanged,clickedSelectAll,clickedNotAnomalie
         return returnList
 
 ### Visualization callbacks
-#@app.callback(
-#    Output('loadingSummary', 'children'),
-#)
+@app.callback(
+    Output('downloadType', 'value'),
+    [Input('dataProcessed','data')]
+)
+def dataTypeExport(dataProcessed):
+    if theData is not None:
+        if theData.file_type == '.csv':
+            return 'csv'
+        if theData.file_type == '.arff':
+            return 'arff'
+    return 'csv'
+
 
 @app.callback(
     [Output('summaryTable', 'columns'),
@@ -353,23 +362,23 @@ def refreshAnomaliesListValue(optionsChanged,clickedSelectAll,clickedNotAnomalie
 )
 def give_summary(dataProcessed):
     if theData is not None:
+        print(theData.data.dtypes)
         #Create summary
         dfList = []
         for item in theData.data.columns:
             df = pd.DataFrame({item: theData.data[item].describe()})
+            df = df.round(decimals=3)
             dfList.append(df)
         totalDf = dfList[0]
-        print(totalDf)
         if len(dfList) > 0:
             for i in range(1,len(dfList)):
                 totalDf = pd.concat([totalDf, dfList[i]], axis=1)
-                print(totalDf)
         totalDf = totalDf.reset_index()
         totalDf.rename(columns={'index':' '}, inplace=True)
         #Return summary to Dash
         return (
             [{"name": i, "id": i} for i in totalDf.columns],
-            create_conditional_style(totalDf.columns),
+            create_conditional_style(totalDf.columns,6),
             totalDf.to_dict('records')
         )
     return ([{"id": " ","name": " "}],[{}],[{}])

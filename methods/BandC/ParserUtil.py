@@ -26,11 +26,11 @@ def assign_parser(file_path: str, contents: str = None, verbose: bool = False) -
             # Check if the dataset has been given as a string
             if contents is None:
                 return parsers[parser](file_path=file_path,
-                                       verbose=verbose)
+                                       verbose=verbose),str(parser)
             else:
                 return parsers[parser](file_path=file_path,
                                        contents=contents,
-                                       verbose=verbose)
+                                       verbose=verbose),str(parser)
 
     # When tshe file format is not in our list of parable formats
 #    raise FileFormatNotFound("File format of file: " + file_path + " is unknown")

@@ -267,7 +267,7 @@ def DataCleaningUI():
             html.Div(
                 id = 'start_button',
                 children = [
-                    html.Button('Start Data Processing', id='startButton'),
+                    html.Button('Start Data Processing', id='startButton',style = {'font-weight':'bold'}),
                 ],
                 style = {'width': '100%','textAlign':'center','display': 'inline-block'}
             ),

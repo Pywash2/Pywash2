@@ -38,12 +38,13 @@ class SharedDataFrame:
         self.anomalies = None
         self.missing_values = None
         self.accuracy_ptypes = None
+        self.file_type = None
         # When a path to a file or the contents are given, parse the file and load the data
         if file_path is not None:
+
+            self.parser,self.file_type = assign_parser(file_path=file_path, contents=contents, verbose=verbose)
+            print(self.parser)
             # Event Logger
-
-            self.parser = assign_parser(file_path=file_path, contents=contents, verbose=verbose)
-
             with open('eventlog.txt', 'a') as file:
                 string = 'Parser to read data is assigned' + '\n' + '\n'
                 file.write(string)
@@ -158,7 +159,7 @@ class SharedDataFrame:
         self.data = self.set_data_types()
 
         self.changeColumns(columnData)
-        if removeDuplicates == True:
+        if removeDuplicates == '1':
             print('removing duplicates')
             self.removeDuplicateRows()
             with open('eventlog.txt', 'a') as file:
@@ -203,8 +204,7 @@ class SharedDataFrame:
         print('done cleaning!')
 
     def changeColumns(self, columnData):
-        """ Remove duplicate rows if selected in preview """
-        # Check if columns need to be removed
+        """ Remove columns selected for removal in preview """
         for item in self.data.columns:
             remove = True
             for item2 in columnData:
@@ -215,9 +215,9 @@ class SharedDataFrame:
                 print('column removed: ' + str(item))
 
     def removeDuplicateRows(self):
+        """ Remove duplicate rows if selected in preview """
         print('Removing duplicates')
         rows = len(self.data.index)
-        """ Remove columns selected for removal in preview """
         self.data.drop_duplicates(inplace=True)
         print('rows removed: ' + str(rows - len(self.data.index)))
         return self.data

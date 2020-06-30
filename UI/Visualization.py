@@ -10,10 +10,6 @@ def VisualizationUI():
                 children = "Here you can have a quick look at the data before exporting to your computer",
                 style = {'textAlign':'center'}
             ),
-            html.H5(
-                children = "(Processing can take a while, it is done when the preview data loads at the bottom of the page)",
-                style = {'textAlign':'center'}
-            ),
             html.Div(
                 id = 'data_export',
                 children = [
@@ -44,7 +40,6 @@ def VisualizationUI():
                                 {'label': '.CSV', 'value': 'csv'},
                                 {'label': '.ARFF', 'value': 'arff'},
                             ],
-                            value='csv',
                             multi=False,
                             placeholder='Select export file type',
                         ),
@@ -71,7 +66,10 @@ def VisualizationUI():
                         ),
                     ],
                 ),
-                style = {'width': '70%','display': 'block','vertical-align': 'middle', 'margin-left': 'auto', 'margin-right': 'auto'}
+                style = {'width': '70%','display': 'block','vertical-align': 'middle', 'margin': 'auto'}
+            ),
+            html.Div( #empty space
+                style = {'height':'50px'},
             ),
             html.Div(
                 id = 'Visualizing',
