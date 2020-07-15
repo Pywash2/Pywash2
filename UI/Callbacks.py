@@ -263,8 +263,7 @@ def handleAnomalies(colData,notAnomalies,replaceAnomalies,coloptions,itemvalues,
     ctx = dash.callback_context
     last_event = ctx.triggered[0]['prop_id'].split('.')[0]
     if colData != None:
-        if notAnomalies != None and last_event == 'anomaliesButtonNotAnomalies' and bookKeeper != None:
-
+        if notAnomalies != None and last_event == 'anomaliesButtonNotAnomalies':
             with open('eventlog.txt', 'a') as file:
                 valstring = ''
                 for item in itemvalues:
@@ -279,7 +278,7 @@ def handleAnomalies(colData,notAnomalies,replaceAnomalies,coloptions,itemvalues,
                 returnList.append({'label': key, 'value': key})
                 bookKeeperUpdate = datetime.now()
             return [returnList,bookKeeperUpdate]
-        if replaceAnomalies != None and last_event == 'anomaliesButtonYesAnomalies' and bookKeeper != None:
+        if replaceAnomalies != None and last_event == 'anomaliesButtonYesAnomalies':
             print('Anomalies: replacing item(s) with None')
 
             with open('eventlog.txt', 'a') as file:
@@ -293,6 +292,7 @@ def handleAnomalies(colData,notAnomalies,replaceAnomalies,coloptions,itemvalues,
             returnList = []
             for key in theData.anomalies:
                 returnList.append({'label': key, 'value': key})
+            print(returnList)
             return [returnList,bookKeeper]
         if last_event == 'columnStorage':
             returnList = []
