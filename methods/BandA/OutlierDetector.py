@@ -88,7 +88,7 @@ def identify_outliers(df, features, contamination=0.1, algorithms=['Isolation Fo
                    'Principal Component Analysis (PCA)': PCA,
                    'Angle-based Outlier Detector (ABOD)': ABOD,
                    'Histogram-base Outlier Detection (HBOS)': HBOS,
-#                   'K Nearest Neighbors (KNN)': knn,
+                   'K Nearest Neighbors (KNN)': knn,
                    'Local Outlier Factor (LOF)': LOF,
                    'Feature Bagging': FeatureBagging,
                    'One-class SVM (OCSVM)': OCSVM,

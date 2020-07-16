@@ -7,7 +7,7 @@ def VisualizationUI():
         id = 'Visualization',
         children = [
             html.H3(
-                children = "Have a quick look at the data before downloading the cleaned dataset",
+                children = "Have a quick look at the cleaned dataset before downloading it",
                 style = {'textAlign':'center'}
             ),
             html.Div(
@@ -63,6 +63,12 @@ def VisualizationUI():
                     children = [
                         dash_table.DataTable(
                             id='summaryTable',
+                            style_data_conditional=[
+                                {
+                                    'if': {'row_index': 'odd'},
+                                    'backgroundColor': 'rgb(248, 248, 248)'
+                                }
+                            ],
                         ),
                     ],
                 ),

@@ -361,6 +361,8 @@ class SharedDataFrame:
 
     def replace_anomalies(self, column_name, items):
         self.data[column_name][self.data[column_name].isin(items)] = None   ###UNTESTED, old application had self.anomalies[column_name] instead of items and could only replace entire columns
+        for item in items:
+            self.data = self.data[self.data[column_name] != item]
         self.remove_anomaly_prediction(column_name, items)
 
     # BandA functions #####

@@ -25,16 +25,17 @@ anomaliesReplace = []
 def translateDTypes(type):
     if type == 'int64':
         translation = 'Integer'
-    if type == 'float64':
+    elif type == 'float64':
         translation = 'Float'
-    if type == 'object':
-        translation = 'String'
-    if type == 'bool':
+    elif type == 'bool':
         translation = 'Boolean'
-    if type == 'datetime64[ns]':
+    elif type == 'datetime64[ns]':
         translation = 'Date/Time'
-    if type == 'category':
+    elif type == 'category':
         translation = 'Categorical'
+    else:
+        #Either string or error, so set to string
+        translation = 'String'
     return translation
 
 #Put Data in Preview Table
@@ -276,7 +277,6 @@ def handleAnomalies(colData,notAnomalies,replaceAnomalies,coloptions,itemvalues,
             returnList = []
             for key in theData.anomalies:
                 returnList.append({'label': key, 'value': key})
-                bookKeeperUpdate = datetime.now()
             return [returnList,bookKeeperUpdate]
         if replaceAnomalies != None and last_event == 'anomaliesButtonYesAnomalies':
             print('Anomalies: replacing item(s) with None')
@@ -449,9 +449,6 @@ def update_download_link(dataProcessed, downloadType):
     Output('Visualization','style')],
     [Input('startButton','n_clicks'),
     Input('PreviewDataTable', 'data')],
-
-#    Input('upload-data', 'contents')],
-
 )
 def initiate_stages(click2,previewData):
     if click2 != None:
