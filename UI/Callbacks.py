@@ -310,7 +310,7 @@ def handleAnomalies(colData,notAnomalies,replaceAnomalies,coloptions,itemvalues,
 )
 def updateAnomaliesListOptions(colValue,bookKeeper):
     print('editing anomaly list')
-    if colValue != None:
+    if colValue != None and colValue in theData.anomalies:
         returnList = []
         for item in theData.anomalies.get(colValue):
             print(item)
