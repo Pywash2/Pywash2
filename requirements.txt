@@ -7,7 +7,7 @@ dash-daq==0.4.0
 numpy==1.18.2
 requests==2.23.0
 sklearn==0.0
-urllib3==1.25.8
+urllib3==1.26.5
 scikit-learn==0.22.1
 dash-table==4.6.1
 greenery==3.1
